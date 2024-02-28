@@ -7,7 +7,7 @@ import math
 class ImageMeasureApp:
     def __init__(self, master):
         self.master = master
-        self.master.title("OdontRad - Measurement App")
+        self.master.title("OdontRad - Measurement")
 
         self.canvas = tk.Canvas(self.master, cursor="cross")
         self.canvas.pack(fill=tk.BOTH, expand=True)
@@ -44,11 +44,19 @@ class ImageMeasureApp:
         calibration_menu.add_command(label="Ange pixlar per mm", command=self.set_pixels_per_mm)
         menubar.add_cascade(label="Kalibrera", menu=calibration_menu)
 
+        help_menu = tk.Menu(menubar, tearoff=0)
+        help_menu.add_command(label="Programinfo", command=self.show_program_info)
+        help_menu.add_command(label="Kortkommandon", command=self.show_shortcuts)
+        menubar.add_cascade(label="Hjälp", menu=help_menu)
+
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
         self.canvas.bind("<Button-2>", lambda event: self.click(event, "scroll"))
         self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
         self.master.bind("s", self.save_measurement)
+        self.master.bind("q", self.exit)
 
+    def exit(self, event=None):
+        self.master.destroy()
     def open_image(self):
         file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.tiff")])
         if file_path:
@@ -58,7 +66,24 @@ class ImageMeasureApp:
             self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo_image)
             self.draw = ImageDraw.Draw(self.image)
             self.image_filename = file_path
+            print("Bild laddad")
+    def show_program_info(self):
+        info_text = """
+        Mät avståndet mellan två punkter i röntgenbilder.
+        
+        Skapat av: 
+        Nils Gustafsson (2024)
+        """
+        messagebox.showinfo("Programinfo", info_text)
 
+    def show_shortcuts(self):
+        shortcut_text = """
+        - Vänsterklicka: Rita blå linje. 
+        - Högerklicka: Rita en grön linje.
+        - Tryck på 's': Spara mätningen
+        - Tryck på 'q': Avsluta programmet
+        """
+        messagebox.showinfo("Kortkommandon", shortcut_text)
     def click(self, event, button):
         if self.image:
             color = "blue" if button == "left" else "green"
@@ -78,6 +103,10 @@ class ImageMeasureApp:
                                f"{distance_pixels:.2f} px", fill=color)
                 self.measure1 = None
                 self.measure2 = None
+                if self.calibration_done:
+                    print(f"Distance: {distance_pixels} pixels and {distance_pixels / self.pixels_per_mm} mm")
+                else:
+                    print(f"Distance: {distance_pixels} pixels")
         elif not self.image:
             messagebox.showerror("Ingen bild laddad", "Ladda en bild först.")
 
@@ -142,9 +171,86 @@ class ImageMeasureApp:
                 print("Save Measurement List:", self.save_measurement_list)
                 # Do something with measurement_info
                 #  print("Measurement Info:", measurement_info)
+            elif blue_measurements:
+                # Get the latest measurement for blue and green
+                latest_blue_measurement = blue_measurements[-1]
+
+                # Calculate length in pixels and mm for blue lines
+                blue_length_pixels = math.sqrt((latest_blue_measurement[1][0] - latest_blue_measurement[0][0]) ** 2 + (
+                            latest_blue_measurement[1][1] - latest_blue_measurement[0][1]) ** 2)
+                if self.calibration_done:
+                    blue_length_mm = blue_length_pixels / self.pixels_per_mm
+
+                # Append the measurement information to a list
+                if self.calibration_done:
+                    measurement_info = {
+                    "blue_points": latest_blue_measurement,
+                    "blue_length_pixels": blue_length_pixels,
+                    "blue_length_mm": blue_length_mm
+                    }
+                else:
+                    measurement_info = {
+                        "blue_points": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels
+                    }
+                self.save_measurement_list.append(measurement_info)
+                # Do something with measurement_info
+                # Visa popup "Sparat" som försvinner efter 1 sekund
+                popup = tk.Toplevel(self.master)
+                popup.title("Sparat")
+
+                # Hämta pekarens position
+                x, y = self.master.winfo_pointerxy()
+                popup.geometry(f"+{x}+{y}")  # Placera popup relativt till pekarens position
+                label = tk.Label(popup, text="Sparar")
+                label.pack(pady=5)
+                popup.after(500, popup.destroy)  # Stäng popup efter 1 sekund
+
+                print("Save Measurement List:", self.save_measurement_list)
+                # Do something with measurement_info
+                #  print("Measurement Info:", measurement_info)
+            elif green_measurements:
+                # Get the latest measurement for blue and green
+                latest_green_measurement = green_measurements[-1]
+
+                # Calculate length in pixels and mm for green lines
+                green_length_pixels = math.sqrt(
+                    (latest_green_measurement[1][0] - latest_green_measurement[0][0]) ** 2 + (
+                                latest_green_measurement[1][1] - latest_green_measurement[0][1]) ** 2)
+                if self.calibration_done:
+                    green_length_mm = green_length_pixels / self.pixels_per_mm
+
+                # Append the measurement information to a list
+                if self.calibration_done:
+                    measurement_info = {
+                    "green_points": latest_green_measurement,
+                    "green_length_pixels": green_length_pixels,
+                    "green_length_mm": green_length_mm
+                    }
+                else:
+                    measurement_info = {
+                        "green_points": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels
+                    }
+                self.save_measurement_list.append(measurement_info)
+                # Do something with measurement_info
+                # Visa popup "Sparat" som försvinner efter 1 sekund
+                popup = tk.Toplevel(self.master)
+                popup.title("Sparat")
+
+                # Hämta pekarens position
+                x, y = self.master.winfo_pointerxy()
+                popup.geometry(f"+{x}+{y}")  # Placera popup relativt till pekarens position
+                label = tk.Label(popup, text="Sparar")
+                label.pack(pady=5)
+                popup.after(500, popup.destroy)  # Stäng popup efter 1 sekund
+
+                print("Save Measurement List:", self.save_measurement_list)
+                # Do something with measurement_info
+                #  print("Measurement Info:", measurement_info)
             else:
                 messagebox.showinfo("Inte tillräckligt med mätningar",
-                                    "Det krävs minst en mätning för både blå och gröna linjer.")
+                                    "Det krävs minst minst en mätning.")
         else:
             messagebox.showerror("Ingen bild öppen", "Öppna en bild först.")
 
@@ -175,8 +281,8 @@ class ImageMeasureApp:
                 if 'green_length_mm' in measurement_info:
                     text_area.insert(tk.END, f"Green Length (mm): {measurement_info['green_length_mm']:.2f} mm\n")
                 if 'ratio' in measurement_info:
-                    text_area.insert(tk.END, f"Ratio (Green/Blue): {measurement_info['ratio']:.2f}\n\n")
-
+                    text_area.insert(tk.END, f"Ratio (Green/Blue): {measurement_info['ratio']:.2f}\n")
+                text_area.insert(tk.END, f"\n")
             scrollbar.config(command=text_area.yview)
         else:
             messagebox.showinfo("Ingen sparad data", "Ingen sparad mätningsdata finns för närvarande.")
