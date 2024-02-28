@@ -1,13 +1,15 @@
-# App name: OdontRad - Mätverktyg
-# Author: Nils Gustafsson
-# Year: 2024
-#
+__author__ = "Nils Gustafsson"
+__copyright__ = "Copyright 2024, Skogsheden"
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Nils Gustafsson"
+__email__ = "nils.gustafsson@umu.se"
+__status__ = "Development"
 
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
 import math
-
 
 class ImageMeasureApp:
     def __init__(self, master):
