@@ -60,7 +60,7 @@ class ImageMeasureApp:
             self.image_filename = file_path
 
     def click(self, event, button):
-        if self.image and self.calibration_done:
+        if self.image:
             color = "blue" if button == "left" else "green"
             lines = self.blue_lines if button == "left" else self.green_lines
 
@@ -78,10 +78,9 @@ class ImageMeasureApp:
                                f"{distance_pixels:.2f} px", fill=color)
                 self.measure1 = None
                 self.measure2 = None
-        elif not self.calibration_done:
-            messagebox.showerror("Kalibrering krävs", "Var god kalibrera pixlar per mm först.")
         elif not self.image:
             messagebox.showerror("Ingen bild laddad", "Ladda en bild först.")
+
 
     def save_measurement(self, event=None):
         if self.image_filename:
@@ -95,19 +94,22 @@ class ImageMeasureApp:
                 # Calculate length in pixels and mm for blue lines
                 blue_length_pixels = math.sqrt((latest_blue_measurement[1][0] - latest_blue_measurement[0][0]) ** 2 + (
                             latest_blue_measurement[1][1] - latest_blue_measurement[0][1]) ** 2)
-                blue_length_mm = blue_length_pixels / self.pixels_per_mm
+                if self.calibration_done:
+                    blue_length_mm = blue_length_pixels / self.pixels_per_mm
 
                 # Calculate length in pixels and mm for green lines
                 green_length_pixels = math.sqrt(
                     (latest_green_measurement[1][0] - latest_green_measurement[0][0]) ** 2 + (
                                 latest_green_measurement[1][1] - latest_green_measurement[0][1]) ** 2)
-                green_length_mm = green_length_pixels / self.pixels_per_mm
+                if self.calibration_done:
+                    green_length_mm = green_length_pixels / self.pixels_per_mm
 
                 # Compute the ratio between the lengths
-                ratio = green_length_mm / blue_length_mm
+                ratio = green_length_pixels / blue_length_pixels
 
                 # Append the measurement information to a list
-                measurement_info = {
+                if self.calibration_done:
+                    measurement_info = {
                     "blue_points": latest_blue_measurement,
                     "blue_length_pixels": blue_length_pixels,
                     "blue_length_mm": blue_length_mm,
@@ -115,7 +117,15 @@ class ImageMeasureApp:
                     "green_length_pixels": green_length_pixels,
                     "green_length_mm": green_length_mm,
                     "ratio": ratio
-                }
+                    }
+                else:
+                    measurement_info = {
+                        "blue_points": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "green_points": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "ratio": ratio
+                    }
                 self.save_measurement_list.append(measurement_info)
                 # Do something with measurement_info
                 # Visa popup "Sparat" som försvinner efter 1 sekund
@@ -154,15 +164,14 @@ class ImageMeasureApp:
                     text_area.insert(tk.END, f"Filename: {measurement_info['filename']}\n")
                 if 'blue_points' in measurement_info:
                     text_area.insert(tk.END, f"Blue Points: {measurement_info['blue_points']}\n")
-                if 'green_points' in measurement_info:
-                    text_area.insert(tk.END, f"Green Points: {measurement_info['green_points']}\n")
                 if 'blue_length_pixels' in measurement_info:
                     text_area.insert(tk.END, f"Blue Length (pixels): {measurement_info['blue_length_pixels']:.2f} px\n")
-                if 'green_length_pixels' in measurement_info:
-                    text_area.insert(tk.END,
-                                     f"Green Length (pixels): {measurement_info['green_length_pixels']:.2f} px\n")
                 if 'blue_length_mm' in measurement_info:
                     text_area.insert(tk.END, f"Blue Length (mm): {measurement_info['blue_length_mm']:.2f} mm\n")
+                if 'green_points' in measurement_info:
+                    text_area.insert(tk.END, f"Green Points: {measurement_info['green_points']}\n")
+                if 'green_length_pixels' in measurement_info:
+                    text_area.insert(tk.END, f"Green Length (pixels): {measurement_info['green_length_pixels']:.2f} px\n")
                 if 'green_length_mm' in measurement_info:
                     text_area.insert(tk.END, f"Green Length (mm): {measurement_info['green_length_mm']:.2f} mm\n")
                 if 'ratio' in measurement_info:
@@ -228,13 +237,20 @@ class ImageMeasureApp:
                 with open(file_path, "w") as file:
                     for measurement_info in self.save_measurement_list:
                         file.write(f"Filename: {self.image_filename}\n")
-                        file.write(f"Blue Points: {measurement_info['blue_points']}\n")
-                        file.write(f"Blue Length (pixels): {measurement_info['blue_length_pixels']:.2f} px\n")
-                        file.write(f"Blue Length (mm): {measurement_info['blue_length_mm']:.2f} mm\n")
-                        file.write(f"Green Points: {measurement_info['green_points']}\n")
-                        file.write(f"Green Length (pixels): {measurement_info['green_length_pixels']:.2f} px\n")
-                        file.write(f"Green Length (mm): {measurement_info['green_length_mm']:.2f} mm\n")
-                        file.write(f"Ratio (Green/Blue): {measurement_info['ratio']:.2f}\n\n")
+                        if 'blue_points' in measurement_info:
+                            file.write(f"Blue Points: {measurement_info['blue_points']}\n")
+                        if 'blue_length_pixels' in measurement_info:
+                            file.write(f"Blue Length (pixels): {measurement_info['blue_length_pixels']:.2f} px\n")
+                        if 'blue_length_mm' in measurement_info:
+                            file.write(f"Blue Length (mm): {measurement_info['blue_length_mm']:.2f} mm\n")
+                        if 'green_points' in measurement_info:
+                            file.write(f"Green Points: {measurement_info['green_points']}\n")
+                        if 'green_length_pixels' in measurement_info:
+                            file.write(f"Green Length (pixels): {measurement_info['green_length_pixels']:.2f} px\n")
+                        if 'green_length_mm' in measurement_info:
+                            file.write(f"Green Length (mm): {measurement_info['green_length_mm']:.2f} mm\n")
+                        if 'ratio' in measurement_info:
+                            file.write(f"Ratio (Green/Blue): {measurement_info['ratio']:.2f}\n\n")
                 messagebox.showinfo("Mätningar sparade", "Mätningar sparade till filen.")
         else:
             messagebox.showinfo("Inga mätningar", "Inga mätningar att spara.")
