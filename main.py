@@ -54,8 +54,8 @@ class ImageMeasureApp:
         menubar.add_cascade(label="Kalibrera", menu=calibration_menu)
 
         help_menu = tk.Menu(menubar, tearoff=0)
-        help_menu.add_command(label="Programinfo", command=self.show_program_info)
         help_menu.add_command(label="Kortkommandon", command=self.show_shortcuts)
+        help_menu.add_command(label="Om", command=self.show_program_info)
         menubar.add_cascade(label="Hjälp", menu=help_menu)
 
         if self.calibration_active:
@@ -82,12 +82,14 @@ class ImageMeasureApp:
 
     def show_program_info(self):
         info_text = """
-        Mät avståndet mellan två punkter i röntgenbilder.
+        Mät avståndet mellan två punkter i röntgenbilder
+        som pixlar, mm eller relativa mått mellan två 
+        mätningar.
         
-        Skapat av: 
-        Nils Gustafsson (2024)
+        Version: 0.1 
+        Skapat av: Nils Gustafsson (2024)
         """
-        messagebox.showinfo("Programinfo", info_text)
+        messagebox.showinfo("Om", info_text)
 
     def show_shortcuts(self):
         shortcut_text = """
@@ -110,7 +112,7 @@ class ImageMeasureApp:
                     self.canvas.bind("<B3-Motion>", lambda event: self.motion(event, color))
                     self.canvas.bind("<ButtonRelease-3>", lambda event: self.release(event, color))
         elif not self.image:
-            messagebox.showerror("Ingen bild öppnad", "Öppja en bild först.")
+            messagebox.showerror("Ingen bild öppnad", "Öppna en bild först.")
 
     def motion(self, event, color):
         self.measure2 = (event.x, event.y)
@@ -199,7 +201,7 @@ class ImageMeasureApp:
                 label.pack(pady=5)
                 popup.after(200, popup.destroy)  # Stäng popup efter 1 sekund
 
-                print("Save Measurement List:", self.save_measurement_list)
+                print("Sparade mätningar:", self.save_measurement_list)
                 # Do something with measurement_info
                 #  print("Measurement Info:", measurement_info)
             elif blue_measurements:
@@ -237,7 +239,7 @@ class ImageMeasureApp:
                 label.pack(pady=5)
                 popup.after(500, popup.destroy)  # Stäng popup efter 1 sekund
 
-                print("Save Measurement List:", self.save_measurement_list)
+                print("Sparade mätningar:", self.save_measurement_list)
                 # Do something with measurement_info
                 #  print("Measurement Info:", measurement_info)
             elif green_measurements:
@@ -276,7 +278,7 @@ class ImageMeasureApp:
                 label.pack(pady=5)
                 popup.after(500, popup.destroy)  # Stäng popup efter 1 sekund
 
-                print("Save Measurement List:", self.save_measurement_list)
+                print("Sparade mätningar:", self.save_measurement_list)
                 # Do something with measurement_info
                 #  print("Measurement Info:", measurement_info)
             else:
