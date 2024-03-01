@@ -1,6 +1,6 @@
 __author__ = "Nils Gustafsson"
 __copyright__ = "Copyright 2024, Skogsheden"
-__license__ = "GPL"
+__license__ = "GPL 3.0"
 __version__ = "0.1"
 __maintainer__ = "Nils Gustafsson"
 __email__ = "nils.gustafsson@umu.se"
@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
 import math
+import os
 
 class ImageMeasureApp:
     def __init__(self, master):
@@ -86,7 +87,7 @@ class ImageMeasureApp:
         som pixlar, mm eller relativa mått mellan två 
         mätningar.
         
-        Version: 0.1 
+        Version: 0.1
         Skapat av: Nils Gustafsson (2024)
         """
         messagebox.showinfo("Om", info_text)
