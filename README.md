@@ -2,7 +2,8 @@
 OdontRad Measurement is a straightforward Python application designed for precise measurements in intraoral and panoramic X-rays. The application operates by measuring distances in pixels, providing a convenient means to gauge dimensions on radiographic images. Furthermore, it offers calibration functionalities, enabling users to correlate pixel measurements with real-world dimensions in millimeters.
 
 Key Features:
-Pixel-based Measurement: Allows users to accurately measure distances within X-ray images directly in pixels.
+Pixel-based Measurement: 
+- Allows users to accurately measure distances within X-ray images directly in pixels.
 
 - Calibration Capability: Offers a calibration feature to translate pixel measurements into millimeters, enhancing the clinical relevance of the measurements.
 
