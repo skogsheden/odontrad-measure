@@ -3,6 +3,7 @@ import tkinter as tk
 import os
 import json
 
+
 def start_rectangle(self, event):
     self.annotation_start_point = (event.x, event.y)
     self.annotation_previous_color = self.annotation_current_color
@@ -51,14 +52,11 @@ def end_rectangle(self, event):
 
         self.annotation_start_point = None
         self.annotation_end_point = None
-        print(self.rectangles)
         self.save_annotations()
 
 
 def delete_last_rectangle(self, event):
     if self.rectangles:
-        print("delete")
-        print(self.rectangles)
         last_rectangle = self.rectangles[-1]["rect"]
         last_text = self.rectangles[-1]["text"]
         self.canvas.delete(last_rectangle)  # Delete the rectangle from the canvas
@@ -142,6 +140,6 @@ def load_annotations(self):
                 "text": text,
                 "color": color
             })
-        print(f"Annotations loaded from {annot_filepath}")
+        print(f"Annoteringar laddade från: {annot_filepath}")
     else:
-        print("No annotation file found")
+        print("Inga annoteringar funna!")

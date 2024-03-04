@@ -1,5 +1,7 @@
 from tkinter import filedialog, simpledialog, messagebox
 import math
+import os
+import json
 
 
 def set_pixels_per_mm(self):
@@ -9,6 +11,7 @@ def set_pixels_per_mm(self):
         messagebox.showinfo("Pixlar per mm inställda",
                             f"Pixlar per mm inställda till: {pixels_per_mm:.2f} vilket motsvarar pixelstorleken {1 / pixels_per_mm:.2f}")
         self.calibration_done = True
+        self.save_calibration_data()
 
 
 def set_pixels_size(self):
@@ -18,6 +21,7 @@ def set_pixels_size(self):
         messagebox.showinfo("Pixelstorleken inställd",
                             f"Pixelstorleken är inställd till  {pixels_size} vilket motsvarar {self.pixels_per_mm:.2f} pixlar per mm ")
         self.calibration_done = True
+        self.save_calibration_data()
 
 
 def calibrate_pixels_to_mm(self):
@@ -60,4 +64,47 @@ def calibrate_release(self, event):
         self.calibration_active = False
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))  # Rebind left-click event
         self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))  # Rebind right-click event
+        self.save_calibration_data()
     self.reset_canvas()
+
+
+def save_calibration_data(self):
+    if self.calibration_done and self.image_filepath:
+        # Extract the filename and directory from the image filepath
+        filepath, filename = os.path.split(self.image_filepath)
+        # Remove the extension from the filename
+        filename_no_ext = os.path.splitext(filename)[0]
+        # Create the calibration filepath with the same directory and filename but different extension
+        calibration_filepath = os.path.join(filepath, filename_no_ext + ".calib")
+
+        # Create a dictionary with calibration data
+        calibration_data = {
+            "pixels_per_mm": self.pixels_per_mm
+        }
+
+        # Save calibration data to file
+        with open(calibration_filepath, "w") as calib_file:
+            json.dump(calibration_data, calib_file)
+
+
+def load_calibration_data(self):
+    if self.image_filepath:
+        # Extract the filename and directory from the image filepath
+        filepath, filename = os.path.split(self.image_filepath)
+        # Remove the extension from the filename
+        filename_no_ext = os.path.splitext(filename)[0]
+        # Create the calibration filepath with the same directory and filename but different extension
+        calibration_filepath = os.path.join(filepath, filename_no_ext + ".calib")
+
+        # Check if the calibration file exists
+        if os.path.exists(calibration_filepath):
+            # Load calibration data from file
+            with open(calibration_filepath, "r") as calib_file:
+                calibration_data = json.load(calib_file)
+                pixels_per_mm = calibration_data.get("pixels_per_mm")
+                if pixels_per_mm:
+                    print(f"Laddar sparad kalibrering för {filename}: {pixels_per_mm:.2f} pixlar per mm")
+                else:
+                    print(f"Ingen sparad kalibrering för{filename}")
+        else:
+            print(f"Ingen sparad kalibrering för {filename}")

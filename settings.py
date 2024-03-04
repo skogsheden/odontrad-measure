@@ -94,7 +94,7 @@ def load_settings(self):
         self.username = ""
         self.function1_enabled.set(False)
         self.function2_enabled.set(False)
-
+    print(self.function1_enabled.get(), self.function2_enabled.get())
 
 def clear_all_saved(self):
     for line in self.blue_lines:

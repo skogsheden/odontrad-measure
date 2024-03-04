@@ -53,8 +53,9 @@ class XrayMeasure:
 
         # Settings
         self.username = ""
-        self.function1_enabled = tk.BooleanVar(value=False)  # Behåll linjer: Aktiverad
-        self.function2_enabled = tk.BooleanVar(value=False)  # Fråga om tandyta: Aktiverad
+        self.function1_enabled = tk.BooleanVar(value=False)  # Fråga om tandyta: Aktiverad
+        self.function2_enabled = tk.BooleanVar(value=False)  # Behåll linjer: Aktiverad
+
 
         # Annotation
         self.annotation_active = False
@@ -126,6 +127,9 @@ class XrayMeasure:
     def load_annotations(self):
         annotation.load_annotations(self)
 
+    def load_calibration_data(self):
+        calibration.load_calibration_data(self)
+
     # Settings
     def show_program_info(self):
         settings.show_program_info(self)
@@ -169,6 +173,9 @@ class XrayMeasure:
 
     def calibrate_release(self, event):
         calibration.calibrate_release(self, event)
+
+    def save_calibration_data(self):
+        calibration.save_calibration_data(self)
 
     # Measurement
     def click(self, event, button):

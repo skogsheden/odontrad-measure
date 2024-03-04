@@ -16,6 +16,7 @@ def open_image(self):
         self.image_filename = filename_parts[-1]  # Sista delen är filnamnet, hela path behövs ej
         print("Bild laddad")
         self.load_annotations()
+        self.load_calibration_data()
 
 
 def load_measurements_from_file(self, line_color=None):
@@ -80,3 +81,4 @@ def load_measurements_from_file(self, line_color=None):
         else:
             messagebox.showerror("Fel fil öppnad",
                                  f"Ingen information hittades för den aktuella bilden \"{self.image_filename}\".")
+

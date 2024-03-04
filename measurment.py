@@ -63,7 +63,6 @@ def save_measurement(self, event=None):
                 # Extract coordinates of the rectangle
                 x1, y1 = rectangle["coordinates"][0]
                 x2, y2 = rectangle["coordinates"][1]
-                print(x1, y1, x2, y2)
 
                 # Check if both blue and green coordinates are within the rectangle
                 if blue_measurements and green_measurements:
@@ -109,11 +108,12 @@ def save_measurement(self, event=None):
                     tooth_id = "NA"
         else:
             # No rectangles present
-            tooth_id = simpledialog.askstring("Ingen träff - Ange tand", "Skriv in namnet på tanden:")
-            if not tooth_id:
+            if self.function1_enabled.get():
+                tooth_id = simpledialog.askstring("Ingen träff - Ange tand", "Skriv in namnet på tanden:")
+                if not tooth_id:
+                    tooth_id = "NA"
+            else:
                 tooth_id = "NA"
-
-        print(tooth_id)
 
         if blue_measurements and green_measurements:
             # Get the latest measurement for blue and green
@@ -137,26 +137,46 @@ def save_measurement(self, event=None):
             ratio = green_length_pixels / blue_length_pixels
 
             # Append the measurement information to a list
-            if self.calibration_done:
-                measurement_info = {
-                    "tooth_id": tooth_id,
-                    "blue_coordinates": latest_blue_measurement,
-                    "blue_length_pixels": blue_length_pixels,
-                    "blue_length_mm": blue_length_mm,
-                    "green_coordinates": latest_green_measurement,
-                    "green_length_pixels": green_length_pixels,
-                    "green_length_mm": green_length_mm,
-                    "ratio": ratio
-                }
+            if tooth_id == "NA":
+                if self.calibration_done:
+                    measurement_info = {
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "blue_length_mm": blue_length_mm,
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "green_length_mm": green_length_mm,
+                        "ratio": ratio
+                    }
+                else:
+                    measurement_info = {
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "ratio": ratio
+                    }
             else:
-                measurement_info = {
-                    "tooth_id": tooth_id,
-                    "blue_coordinates": latest_blue_measurement,
-                    "blue_length_pixels": blue_length_pixels,
-                    "green_coordinates": latest_green_measurement,
-                    "green_length_pixels": green_length_pixels,
-                    "ratio": ratio
-                }
+                if self.calibration_done:
+                    measurement_info = {
+                        "tooth_id": tooth_id,
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "blue_length_mm": blue_length_mm,
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "green_length_mm": green_length_mm,
+                        "ratio": ratio
+                    }
+                else:
+                    measurement_info = {
+                        "tooth_id": tooth_id,
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "ratio": ratio
+                    }
             self.save_measurement_list.append(measurement_info)
             # Do something with measurement_info
             # Visa popup "Sparat" som försvinner efter 1 sekund
@@ -170,9 +190,7 @@ def save_measurement(self, event=None):
             label.pack(pady=5)
             popup.after(200, popup.destroy)  # Stäng popup efter 1 sekund
 
-            print("Sparade mätningar:", self.save_measurement_list)
-            # Do something with measurement_info
-            #  print("Measurement Info:", measurement_info)
+
         elif blue_measurements:
             # Get the latest measurement for blue and green
             latest_blue_measurement = blue_measurements[-1]
@@ -184,19 +202,32 @@ def save_measurement(self, event=None):
                 blue_length_mm = blue_length_pixels / self.pixels_per_mm
 
             # Append the measurement information to a list
-            if self.calibration_done:
-                measurement_info = {
-                    "tooth_id": tooth_id,
-                    "blue_coordinates": latest_blue_measurement,
-                    "blue_length_pixels": blue_length_pixels,
-                    "blue_length_mm": blue_length_mm
-                }
+            if tooth_id == "NA":
+                if self.calibration_done:
+                    measurement_info = {
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "blue_length_mm": blue_length_mm
+                    }
+                else:
+                    measurement_info = {
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels
+                    }
             else:
-                measurement_info = {
-                    "tooth_id": tooth_id,
-                    "blue_coordinates": latest_blue_measurement,
-                    "blue_length_pixels": blue_length_pixels
-                }
+                if self.calibration_done:
+                    measurement_info = {
+                        "tooth_id": tooth_id,
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels,
+                        "blue_length_mm": blue_length_mm
+                    }
+                else:
+                    measurement_info = {
+                        "tooth_id": tooth_id,
+                        "blue_coordinates": latest_blue_measurement,
+                        "blue_length_pixels": blue_length_pixels
+                    }
             self.save_measurement_list.append(measurement_info)
             # Do something with measurement_info
             # Visa popup "Sparat" som försvinner efter 1 sekund
@@ -210,9 +241,6 @@ def save_measurement(self, event=None):
             label.pack(pady=5)
             popup.after(500, popup.destroy)  # Stäng popup efter 1 sekund
 
-            print("Sparade mätningar:", self.save_measurement_list)
-            # Do something with measurement_info
-            #  print("Measurement Info:", measurement_info)
         elif green_measurements:
             # Get the latest measurement for blue and green
             latest_green_measurement = green_measurements[-1]
@@ -225,19 +253,32 @@ def save_measurement(self, event=None):
                 green_length_mm = green_length_pixels / self.pixels_per_mm
 
             # Append the measurement information to a list
-            if self.calibration_done:
-                measurement_info = {
-                    "tooth_id": tooth_id,
-                    "green_coordinates": latest_green_measurement,
-                    "green_length_pixels": green_length_pixels,
-                    "green_length_mm": green_length_mm
-                }
+            if tooth_id == "NA":
+                if self.calibration_done:
+                    measurement_info = {
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "green_length_mm": green_length_mm
+                    }
+                else:
+                    measurement_info = {
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels
+                    }
             else:
-                measurement_info = {
-                    "tooth_id": tooth_id,
-                    "green_coordinates": latest_green_measurement,
-                    "green_length_pixels": green_length_pixels
-                }
+                if self.calibration_done:
+                    measurement_info = {
+                        "tooth_id": tooth_id,
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels,
+                        "green_length_mm": green_length_mm
+                    }
+                else:
+                    measurement_info = {
+                        "tooth_id": tooth_id,
+                        "green_coordinates": latest_green_measurement,
+                        "green_length_pixels": green_length_pixels
+                    }
             self.save_measurement_list.append(measurement_info)
             # Do something with measurement_info
             # Visa popup "Sparat" som försvinner efter 1 sekund
@@ -251,9 +292,6 @@ def save_measurement(self, event=None):
             label.pack(pady=5)
             popup.after(500, popup.destroy)  # Stäng popup efter 1 sekund
 
-            print("Sparade mätningar:", self.save_measurement_list)
-            # Do something with measurement_info
-            #  print("Measurement Info:", measurement_info)
         else:
             messagebox.showinfo("Inte tillräckligt med mätningar",
                                 "Det krävs minst minst en mätning för att kunna spara.")
@@ -316,7 +354,6 @@ def toggle_lines_visibility(self):
     else:
         # Toggle the state of all lines based on the state
         new_state = "hidden" if self.lines_state == "normal" else "normal"
-        print(new_state)
         self.lines_state = new_state
         for line in self.saved_lines:
             self.canvas.itemconfigure(line, state=new_state)
