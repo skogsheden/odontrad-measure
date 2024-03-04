@@ -55,6 +55,66 @@ def save_measurement(self, event=None):
     if self.image_filename:
         blue_measurements = self.measurements["blue"]
         green_measurements = self.measurements["green"]
+        matching_rectangles = []
+
+        # Check if any measurement is within an annotated rectangle
+        if self.rectangles:
+            for rectangle in self.rectangles:
+                # Extract coordinates of the rectangle
+                x1, y1 = rectangle["coordinates"][0]
+                x2, y2 = rectangle["coordinates"][1]
+                print(x1, y1, x2, y2)
+
+                # Check if both blue and green coordinates are within the rectangle
+                if blue_measurements and green_measurements:
+                    if all(x1 <= point[0] <= x2 and y1 >= point[1] >= y2 for point in
+                           blue_measurements[-1] + green_measurements[-1]):
+                        matching_rectangles.append(rectangle)
+                # Check if only blue measurements are within the rectangle
+                elif blue_measurements and not green_measurements:
+                    if all(x1 <= point[0] <= x2 and y1 >= point[1] >= y2 for point in
+                           blue_measurements[-1]):
+                        matching_rectangles.append(rectangle)
+                # Check if only green measurements are within the rectangle
+                elif not blue_measurements and green_measurements:
+                    if all(x1 <= point[0] <= x2 and y1 >= point[1] >= y2 for point in
+                           green_measurements[-1]):
+                        matching_rectangles.append(rectangle)
+            if matching_rectangles:
+                if len(matching_rectangles) > 1:
+                    # If multiple matching rectangles, prompt the user to select one
+                    rectangle_names = [rectangle["tooth_id"] for rectangle in matching_rectangles]
+                    names_string = "\n".join(rectangle_names)
+
+                    selected_rectangle = simpledialog.askstring("Ingen träff - Ange tand",
+                                                                "Tillgängliga tandnamn:\n" + names_string + "\n\nSkriv in namnet på tanden:")
+                    if selected_rectangle:
+                        if selected_rectangle in rectangle_names:
+                            tooth_id = selected_rectangle
+                        else:
+                            confirm_selection = messagebox.askyesno("Bekräftelse",
+                                                                     selected_rectangle + " fanns inte i listan. Vill du spara?")
+                            if confirm_selection:
+                                tooth_id = selected_rectangle
+                            else:
+                                tooth_id = "NA"
+                                return  # User cancelled selection
+                else:
+                    # Only one matching rectangle found
+                    tooth_id = matching_rectangles[0]["tooth_id"]
+            else:
+                # No matching rectangles found
+                tooth_id = simpledialog.askstring("Ingen träff - Ange tand", "Skriv in namnet på tanden:")
+                if not tooth_id:
+                    tooth_id = "NA"
+        else:
+            # No rectangles present
+            tooth_id = simpledialog.askstring("Ingen träff - Ange tand", "Skriv in namnet på tanden:")
+            if not tooth_id:
+                tooth_id = "NA"
+
+        print(tooth_id)
+
         if blue_measurements and green_measurements:
             # Get the latest measurement for blue and green
             latest_blue_measurement = blue_measurements[-1]
@@ -79,6 +139,7 @@ def save_measurement(self, event=None):
             # Append the measurement information to a list
             if self.calibration_done:
                 measurement_info = {
+                    "tooth_id": tooth_id,
                     "blue_coordinates": latest_blue_measurement,
                     "blue_length_pixels": blue_length_pixels,
                     "blue_length_mm": blue_length_mm,
@@ -89,6 +150,7 @@ def save_measurement(self, event=None):
                 }
             else:
                 measurement_info = {
+                    "tooth_id": tooth_id,
                     "blue_coordinates": latest_blue_measurement,
                     "blue_length_pixels": blue_length_pixels,
                     "green_coordinates": latest_green_measurement,
@@ -124,12 +186,14 @@ def save_measurement(self, event=None):
             # Append the measurement information to a list
             if self.calibration_done:
                 measurement_info = {
+                    "tooth_id": tooth_id,
                     "blue_coordinates": latest_blue_measurement,
                     "blue_length_pixels": blue_length_pixels,
                     "blue_length_mm": blue_length_mm
                 }
             else:
                 measurement_info = {
+                    "tooth_id": tooth_id,
                     "blue_coordinates": latest_blue_measurement,
                     "blue_length_pixels": blue_length_pixels
                 }
@@ -163,12 +227,14 @@ def save_measurement(self, event=None):
             # Append the measurement information to a list
             if self.calibration_done:
                 measurement_info = {
+                    "tooth_id": tooth_id,
                     "green_coordinates": latest_green_measurement,
                     "green_length_pixels": green_length_pixels,
                     "green_length_mm": green_length_mm
                 }
             else:
                 measurement_info = {
+                    "tooth_id": tooth_id,
                     "green_coordinates": latest_green_measurement,
                     "green_length_pixels": green_length_pixels
                 }
@@ -221,6 +287,8 @@ def show_saved_measurements(self):
         for measurement_info in self.save_measurement_list:
             if 'filename' in measurement_info:
                 text_area.insert(tk.END, f"Filename: {measurement_info['filename']}\n")
+            if 'tooth_id' in measurement_info:
+                text_area.insert(tk.END, f"Tooth id: {measurement_info['tooth_id']}\n")
             if 'blue_coordinates' in measurement_info:
                 text_area.insert(tk.END, f"Blue coordinates: {measurement_info['blue_coordinates']}\n")
             if 'blue_length_pixels' in measurement_info:
@@ -240,3 +308,16 @@ def show_saved_measurements(self):
         scrollbar.config(command=text_area.yview)
     else:
         messagebox.showinfo("Inga sparade mätningar", "Ingen mätningsdata sparad för närvarande.")
+
+
+def toggle_lines_visibility(self):
+    if not self.saved_lines:
+        messagebox.showinfo("Inga sparade mätningar", "Inga sparade mätningar att dölja")
+    else:
+        # Toggle the state of all lines based on the state
+        new_state = "hidden" if self.lines_state == "normal" else "normal"
+        print(new_state)
+        self.lines_state = new_state
+        for line in self.saved_lines:
+            self.canvas.itemconfigure(line, state=new_state)
+

@@ -1,6 +1,7 @@
 from tkinter import simpledialog
 import tkinter as tk
-
+import os
+import json
 
 def start_rectangle(self, event):
     self.annotation_start_point = (event.x, event.y)
@@ -26,8 +27,11 @@ def end_rectangle(self, event):
             name = "NA"  # No id provided
         if name:
             # Determine position of text
-            x1, y1 = self.annotation_start_point
-            x2, y2 = self.annotation_end_point
+            x1 = min(self.annotation_start_point[0], self.annotation_end_point[0])
+            x2 = max(self.annotation_start_point[0], self.annotation_end_point[0])
+            y1 = max(self.annotation_start_point[1], self.annotation_end_point[1])
+            y2 = min(self.annotation_start_point[1], self.annotation_end_point[1])
+
             text_x = min(x1, x2)
             text_y = min(y1, y2)
 
@@ -35,7 +39,7 @@ def end_rectangle(self, event):
             rectangle = {
                 "image": self.image_filename,
                 "tooth_id": name,
-                "coordinates": (self.annotation_start_point, self.annotation_end_point),
+                "coordinates": ((x1, y1), (x2, y2)),  # Store the new coordinates
                 "rect": self.rect,
                 "text": self.canvas.create_text(text_x, text_y, text=name, anchor=tk.NW,
                                                 fill=self.annotation_current_color),
@@ -48,6 +52,7 @@ def end_rectangle(self, event):
         self.annotation_start_point = None
         self.annotation_end_point = None
         print(self.rectangles)
+        self.save_annotations()
 
 
 def delete_last_rectangle(self, event):
@@ -59,16 +64,84 @@ def delete_last_rectangle(self, event):
         self.canvas.delete(last_rectangle)  # Delete the rectangle from the canvas
         self.canvas.delete(last_text)
         self.rectangles.pop()
+        self.save_annotations()
     else:
         print("Inget att radera")
 
 
-def toggle_rectangles_visibility(self):
-    for rectangle_data in self.rectangles:
-        rectangle = rectangle_data["rect"]
-        text = rectangle_data["text"]
-        color = rectangle_data["color"]
-        current_state = self.canvas.itemcget(rectangle, "state")
-        new_state = "hidden" if current_state == "normal" else "normal"
-        self.canvas.itemconfigure(rectangle, state=new_state)
-        self.canvas.itemconfigure(text, state=new_state)
+def toggle_rectangles_visibility(self, event=None):
+    if self.rectangles:
+        for rectangle_data in self.rectangles:
+            rectangle = rectangle_data["rect"]
+            text = rectangle_data["text"]
+            color = rectangle_data["color"]
+            current_state = self.canvas.itemcget(rectangle, "state")
+            new_state = "hidden" if current_state == "normal" else "normal"
+            self.canvas.itemconfigure(rectangle, state=new_state)
+            self.canvas.itemconfigure(text, state=new_state)
+    else:
+        print("Nothing to hide")
+
+
+def save_annotations(self):
+    # Get the filename of the image without extension
+    image_filename = os.path.splitext(os.path.basename(self.image_filepath))[0]
+    # Save annotations only if there are any
+    if self.rectangles:
+        # Create a dictionary to store all annotations
+        annotations = {"image_filename": image_filename, "annotations": []}
+        for rectangle_data in self.rectangles:
+            annotation = {
+                "tooth_id": rectangle_data["tooth_id"],
+                "coordinates": rectangle_data["coordinates"],
+                "color": rectangle_data["color"]
+            }
+            annotations["annotations"].append(annotation)
+        # Save the annotations to a .annot file
+        annot_filename = f"{image_filename}.annot"
+        annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
+        with open(annot_filepath, "w") as annot_file:
+            json.dump(annotations, annot_file)
+        print(f"Annoteringar sparade till: {annot_filepath}")
+    else:
+        # If there are no annotations, delete the annotation file if it exists
+        annot_filename = f"{image_filename}.annot"
+        annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
+        if os.path.exists(annot_filepath):
+            os.remove(annot_filepath)
+            print(f"Inga annoteringar kvar, raderar filen: {annot_filepath}")
+        else:
+            print("Inget att spara")
+
+
+def load_annotations(self):
+    # Get the filename of the image without extension
+    image_filename = os.path.splitext(os.path.basename(self.image_filepath))[0]
+    # Check if annotation file exists
+    annot_filename = f"{image_filename}.annot"
+    annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
+    if os.path.exists(annot_filepath):
+        with open(annot_filepath, "r") as annot_file:
+            annotations = json.load(annot_file)
+        # Draw rectangles based on annotations
+        for annotation in annotations["annotations"]:
+            tooth_id = annotation["tooth_id"]
+            coordinates = annotation["coordinates"]
+            color = annotation["color"]
+            x1, y1 = coordinates[0]
+            x2, y2 = coordinates[1]
+            rect = self.canvas.create_rectangle(x1, y1, x2, y2, outline=color)
+            text_x = min(x1, x2)
+            text_y = min(y1, y2)
+            text = self.canvas.create_text(text_x, text_y, text=tooth_id, anchor=tk.NW, fill=color)
+            # Add the loaded rectangle to self.rectangles
+            self.rectangles.append({
+                "tooth_id": tooth_id,
+                "coordinates": coordinates,
+                "rect": rect,
+                "text": text,
+                "color": color
+            })
+        print(f"Annotations loaded from {annot_filepath}")
+    else:
+        print("No annotation file found")

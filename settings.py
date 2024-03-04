@@ -7,7 +7,10 @@ def show_program_info(self):
     info_text = """
     Mät avståndet mellan två punkter i röntgenbilder
     som pixlar, mm eller relativa mått mellan två 
-    mätningar.
+    mätningar. 
+    
+    Annotera bilderna med tandnummer för
+    att automatisk registera tandnummer för mätningar. 
 
     Version: 0.1.2 (2024.03)
     Skapat av: Nils Gustafsson 
@@ -17,11 +20,17 @@ def show_program_info(self):
 
 def show_shortcuts(self):
     shortcut_text = """
+    Mätning:
     - Vänsterklicka: Rita blå linje. 
     - Högerklicka: Rita en grön linje.
     - Tryck på 's': Spara mätningen
+
+    Annotering:
+    - Tryck på 'h': För att växla mellan visa/dölja.
+    - Tryck på 'Esc/Escape': Avsluta annotering.
+    
+    Övergripande:
     - Tryck på 'q': Avsluta programmet
-    - Tryck på 'Esc/Escape': Avsluta annotering
     """
     messagebox.showinfo("Kortkommandon", shortcut_text)
 

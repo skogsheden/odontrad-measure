@@ -32,6 +32,7 @@ class XrayMeasure:
         self.image = None
         self.photo_image = None
         self.image_filename = None
+        self.image_filepath = None
 
         # Calibration
         self.pixels_per_mm = None
@@ -48,6 +49,7 @@ class XrayMeasure:
         self.saved_lines = []
         self.measurements = {"blue": [], "green": []}  # Separate measurements for blue and green lines
         self.save_measurement_list = []
+        self.lines_state = "normal"
 
         # Settings
         self.username = ""
@@ -69,21 +71,24 @@ class XrayMeasure:
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Öppna bild", command=self.open_image)
         file_menu.add_separator()
-        file_menu.add_command(label="Visa sparade mätningar", command=self.show_saved_measurements)
-        file_menu.add_command(label="Importera sparade mätningar", command=self.load_measurements_from_file)
-        file_menu.add_command(label="Rensa alla mätningar", command=self.clear_all_saved)
-        file_menu.add_command(label="Spara till fil", command=self.save_measurements_to_file)
-        file_menu.add_separator()
+        file_menu.add_command(label="Spara mätningar till fil", command=self.save_measurements_to_file)
         file_menu.add_command(label="Inställningar", command=self.open_settings_window)
         file_menu.add_separator()
         file_menu.add_command(label="Avsluta", command=self.exit)
         menubar.add_cascade(label="Arkiv", menu=file_menu)
 
+        mesaurment_menu = tk.Menu(menubar, tearoff=0)
+        mesaurment_menu.add_command(label="Dölj/Visa ", command=self.toggle_lines_visibility)
+        mesaurment_menu.add_command(label="Importera", command=self.load_measurements_from_file)
+        mesaurment_menu.add_command(label="Visa sparade", command=self.show_saved_measurements)
+        mesaurment_menu.add_command(label="Rensa sparade", command=self.clear_all_saved)
+        menubar.add_cascade(label="Mätningar", menu=mesaurment_menu)
+
         annotation_menu = tk.Menu(menubar, tearoff=0)
-        annotation_menu.add_command(label="Starta annotering", command=self.annotate)
-        annotation_menu.add_command(label="Avsluta annotering", command=self.stop_annotation)
-        file_menu.add_separator()
-        annotation_menu.add_command(label="Dölj/Visa rektanglar", command=self.toggle_rectangles_visibility)
+        annotation_menu.add_command(label="Starta", command=self.annotate)
+        annotation_menu.add_command(label="Stoppa", command=self.stop_annotation)
+        annotation_menu.add_separator()
+        annotation_menu.add_command(label="Dölj/Visa", command=self.toggle_rectangles_visibility)
         menubar.add_cascade(label="Annotering", menu=annotation_menu)
 
         settings_menu = tk.Menu(menubar, tearoff=0)
@@ -100,6 +105,7 @@ class XrayMeasure:
         # Bind keyboard shortcuts
         self.master.bind("q", self.exit)
         self.master.bind("s", self.save_measurement)
+        self.master.bind("h", lambda event: self.toggle_rectangles_visibility())
 
         # Load settings from file
         settings.load_settings(self)
@@ -116,6 +122,9 @@ class XrayMeasure:
 
     def load_measurements_from_file(self):
         load_data.load_measurements_from_file(self)
+
+    def load_annotations(self):
+        annotation.load_annotations(self)
 
     # Settings
     def show_program_info(self):
@@ -177,6 +186,9 @@ class XrayMeasure:
     def show_saved_measurements(self):
         measurment.show_saved_measurements(self)
 
+    def toggle_lines_visibility(self):
+        measurment.toggle_lines_visibility(self)
+
     # Annotation
     def annotate(self):
         self.canvas.unbind("<Button-1>")
@@ -214,6 +226,9 @@ class XrayMeasure:
 
     def toggle_rectangles_visibility(self):
         annotation.toggle_rectangles_visibility(self)
+
+    def save_annotations(self):
+        annotation.save_annotations(self)
 
 
 def main():

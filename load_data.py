@@ -6,6 +6,7 @@ from PIL import Image, ImageTk, ImageDraw
 def open_image(self):
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.tiff")])
     if file_path:
+        self.image_filepath = file_path
         self.image = Image.open(file_path)
         self.photo_image = ImageTk.PhotoImage(self.image)
         self.canvas.config(width=self.image.width, height=self.image.height)
@@ -14,6 +15,7 @@ def open_image(self):
         filename_parts = file_path.split('/')
         self.image_filename = filename_parts[-1]  # Sista delen är filnamnet, hela path behövs ej
         print("Bild laddad")
+        self.load_annotations()
 
 
 def load_measurements_from_file(self, line_color=None):
