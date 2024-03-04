@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import math
 
+
 def click(self, event, button):
     if self.image:
         color = "blue" if button == "left" else "green"
@@ -239,9 +240,3 @@ def show_saved_measurements(self):
         scrollbar.config(command=text_area.yview)
     else:
         messagebox.showinfo("Inga sparade mätningar", "Ingen mätningsdata sparad för närvarande.")
-
-def calculate_distance(self, point1, point2):
-        if self.pixels_per_mm:
-            return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2) / self.pixels_per_mm
-        else:
-            return 0

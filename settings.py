@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 import json
 
+
 def show_program_info(self):
     info_text = """
     Mät avståndet mellan två punkter i röntgenbilder
@@ -20,6 +21,7 @@ def show_shortcuts(self):
     - Högerklicka: Rita en grön linje.
     - Tryck på 's': Spara mätningen
     - Tryck på 'q': Avsluta programmet
+    - Tryck på 'Esc/Escape': Avsluta annotering
     """
     messagebox.showinfo("Kortkommandon", shortcut_text)
 
@@ -84,28 +86,30 @@ def load_settings(self):
         self.function1_enabled.set(False)
         self.function2_enabled.set(False)
 
+
 def clear_all_saved(self):
-        for line in self.blue_lines:
-            self.canvas.delete(line)
-        for line in self.green_lines:
-            self.canvas.delete(line)
-        for line in self.saved_lines:
-            self.canvas.delete(line)
-        self.blue_lines.clear()
-        self.green_lines.clear()
-        self.saved_lines.clear()
-        self.measurements.clear()
-        self.save_measurement_list.clear()
-        self.measurements = {"blue": [], "green": []}  # Separate measurements for blue and green lines
-        self.measure1 = None
-        self.measure2 = None
+    for line in self.blue_lines:
+        self.canvas.delete(line)
+    for line in self.green_lines:
+        self.canvas.delete(line)
+    for line in self.saved_lines:
+        self.canvas.delete(line)
+    self.blue_lines.clear()
+    self.green_lines.clear()
+    self.saved_lines.clear()
+    self.measurements.clear()
+    self.save_measurement_list.clear()
+    self.measurements = {"blue": [], "green": []}  # Separate measurements for blue and green lines
+    self.measure1 = None
+    self.measure2 = None
+
 
 def reset_canvas(self):
-        for line in self.blue_lines:
-            self.canvas.delete(line)
-        for line in self.green_lines:
-            self.canvas.delete(line)
-        self.blue_lines.clear()
-        self.green_lines.clear()
-        self.measure1 = None
-        self.measure2 = None
+    for line in self.blue_lines:
+        self.canvas.delete(line)
+    for line in self.green_lines:
+        self.canvas.delete(line)
+    self.blue_lines.clear()
+    self.green_lines.clear()
+    self.measure1 = None
+    self.measure2 = None

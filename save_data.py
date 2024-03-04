@@ -1,5 +1,6 @@
 from tkinter import filedialog, simpledialog, messagebox
 
+
 def save_measurements_to_file(self):
     if self.save_measurement_list:
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
@@ -25,4 +26,3 @@ def save_measurements_to_file(self):
             messagebox.showinfo("Mätningar sparade", "Mätningar sparade till filen.")
     else:
         messagebox.showinfo("Inga mätningar", "Inga mätningar att spara.")
-

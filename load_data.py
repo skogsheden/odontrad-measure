@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
+
+
 def open_image(self):
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.tiff")])
     if file_path:
@@ -9,8 +11,10 @@ def open_image(self):
         self.canvas.config(width=self.image.width, height=self.image.height)
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo_image)
         self.draw = ImageDraw.Draw(self.image)
-        self.image_filename = file_path
+        filename_parts = file_path.split('/')
+        self.image_filename = filename_parts[-1]  # Sista delen är filnamnet, hela path behövs ej
         print("Bild laddad")
+
 
 def load_measurements_from_file(self, line_color=None):
     file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
@@ -27,7 +31,6 @@ def load_measurements_from_file(self, line_color=None):
                         current_filename = line.split("Filename:")[1].strip()
                         if current_filename == self.image_filename:
                             found_matching_file = True
-                            firstpass = False
                         else:
                             continue  # Gå vidare till nästa rad om filnamnet inte matchar
                     else:

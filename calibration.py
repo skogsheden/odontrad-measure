@@ -1,5 +1,7 @@
 from tkinter import filedialog, simpledialog, messagebox
 import math
+
+
 def set_pixels_per_mm(self):
     pixels_per_mm = simpledialog.askfloat("Ange pixlar per mm", "Ange antal pixlar per millimeter:")
     if pixels_per_mm:
