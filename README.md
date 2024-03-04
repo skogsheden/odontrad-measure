@@ -8,11 +8,11 @@ Key Features:
 
 - User-friendly Interface: Designed with simplicity in mind, ensuring ease of use for dental professionals and researchers alike.
 
-- Export measurements: Easily export your saved measurements to text files for importing to statistical or other software products. 
-- Review measurements: Import files to continue or to review previous measurements.
+- Export and Review: Seamlessly export saved measurements to text files for integration with statistical or other analytical software. Previous measurements can be reviewed by importing saved files.
+- Annotation Functionality: Allows users to annotate images and associate teeth IDs for automatic annotation of measurements. Annotations are automatically stored and loaded for enhanced workflow efficiency.
 
-Scientific Paper Reference: When citing the use of OdontRad Measurement in scientific papers or research, please refer to the following citation format:
-Gustafsson, N. (2024). OdontRad - Measurement. GitHub [https://github.com/skogsheden/odontrad-measure/]
+When referencing OdontRad Measurement in scientific papers or research, please utilize the following citation format:
+Gustafsson, N. (2024). OdontRad Measurement (Version 0.1.2). [Software]. GitHub. Available at: [https://github.com/skogsheden/odontrad-measure/]
 
 Additional Information:
-For further details on installation instructions, usage guidelines, and updates, please refer to the documentation available within the GitHub repository.
+For comprehensive installation instructions, usage guidelines, and updates, please consult the documentation provided within the GitHub repository.
