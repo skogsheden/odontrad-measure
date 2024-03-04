@@ -9,7 +9,7 @@ def show_program_info(self):
     som pixlar, mm eller relativa mått mellan två 
     mätningar.
 
-    Version: 0.1.1 (2024.03)
+    Version: 0.1.2 (2024.03)
     Skapat av: Nils Gustafsson 
     """
     messagebox.showinfo("Om", info_text)
