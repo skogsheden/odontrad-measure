@@ -44,41 +44,60 @@ def load_measurements_from_file(self, line_color=None):
             lines = file.readlines()
             measurements = []
             current_measurement = {}
-            current_filename = None
             found_matching_file = False
             for line in lines:
                 if not found_matching_file:
                     if line.startswith("Filename:"):
-                        current_filename = line.split("Filename:")[1].strip()
+                        current_filename = line.split("Filename:")[1].strip().replace('\n', '')
                         if current_filename == self.image_filename:
                             found_matching_file = True
+                            current_filename = current_filename.rstrip('\n')
+                            current_measurement["filename"] = current_filename
                         else:
                             continue  # Gå vidare till nästa rad om filnamnet inte matchar
                     else:
                         continue  # Gå vidare till nästa rad om det inte är en filnamnrad
                 else:
-                    if line.startswith("Blue coordinates:"):
-                        blue_coordinates = eval(line.split(":")[1].strip())
+                    if line.startswith("Tooth id:"):
+                        tooth_id = eval(line.split(":")[1].strip().replace('\n', ''))
+                        current_measurement["tooth_id"] = tooth_id
+                    elif line.startswith("Blue coordinates:"):
+                        blue_coordinates = eval(line.split(":")[1].strip().replace('\n', ''))
                         current_measurement["blue_coordinates"] = blue_coordinates
+                    elif line.startswith("Blue Length (pixels):"):
+                        blue_length_pixels = eval(line.split(":")[1].strip().replace('\n', ''))
+                        current_measurement["blue_length_pixels"] = blue_length_pixels
+                    elif line.startswith("Blue Length (mm):"):
+                        blue_length_mm = eval(line.split(":")[1].strip().replace('\n', ''))
+                        current_measurement["blue_length_mm"] = blue_length_mm
                     elif line.startswith("Green coordinates:"):
-                        green_coordinates = eval(line.split(":")[1].strip())
+                        green_coordinates = eval(line.split(":")[1].strip().replace('\n', ''))
                         current_measurement["green_coordinates"] = green_coordinates
+                    elif line.startswith("Green Length (pixels):"):
+                        green_length_pixels = eval(line.split(":")[1].strip().replace('\n', ''))
+                        current_measurement["green_length_pixels"] = green_length_pixels
+                    elif line.startswith("Green Length (mm):"):
+                        green_length_mm = eval(line.split(":")[1].strip().replace('\n', ''))
+                        current_measurement["green_length_mm"] = green_length_mm
                     elif line.startswith("Ratio (Green/Blue):"):
-                        ratio = float(line.split(":")[1].strip())
+                        ratio = float(line.split(":")[1].strip().replace('\n', ''))
                         current_measurement["ratio"] = ratio
-                        current_measurement = {}
+                        found_matching_file = False
                     elif line.startswith("Filename:"):
-                        measurements.append(current_measurement)
-                        current_measurement = {}
-                        current_filename = line.split("Filename:")[1].strip()
+                        current_filename = line.split("Filename:")[1].strip().replace('\n', '')
                         if current_filename == self.image_filename:
+                            measurements.append(current_measurement)  # If end reached save last measurement
+                            print(current_measurement)
+                            self.save_measurement_list.append(current_measurement)
+                            current_measurement = {}
                             found_matching_file = True
+                            current_filename = current_filename.rstrip('\n')
+                            current_measurement["filename"] = current_filename
                         else:
                             found_matching_file = False
-                measurements.append(current_measurement)  # If end reached save last measurment
-                self.save_measurement_list.append(current_measurement)
-                current_measurement = {}
-
+            measurements.append(current_measurement)  # If end reached save last measurement
+            print(measurements)
+            self.save_measurement_list.append(current_measurement)
         if found_matching_file:
             if measurements:
                 # Nu har vi mätningsinformation för aktuell fil
@@ -101,4 +120,5 @@ def load_measurements_from_file(self, line_color=None):
         else:
             messagebox.showerror("Fel fil öppnad",
                                  f"Ingen information hittades för den aktuella bilden \"{self.image_filename}\".")
+        measurements = {}
 
