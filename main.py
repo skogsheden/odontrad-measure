@@ -148,8 +148,8 @@ class XrayMeasure:
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
         self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
 
-    def ai_visualize_data(self):
-        ai.visualize_data(self.rectangles, self.image)
+    # def ai_visualize_data(self):
+    #     ai.visualize_data(self.rectangles, self.image)
 
     def load_measurements_from_file(self):
         load_data.load_measurements_from_file(self)
