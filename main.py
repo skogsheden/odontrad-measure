@@ -1,7 +1,7 @@
 __author__ = "Nils Gustafsson"
 __copyright__ = "Copyright 2024, Skogsheden"
 __license__ = "GPL 3.0"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __maintainer__ = "Nils Gustafsson"
 __email__ = "nils.gustafsson@umu.se"
 __status__ = "Development"
