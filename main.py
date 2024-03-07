@@ -6,6 +6,8 @@ __maintainer__ = "Nils Gustafsson"
 __email__ = "nils.gustafsson@umu.se"
 __status__ = "Development"
 
+# Executable built with command: pyinstaller --name 'odontrad-measure' --icon 'icon.ico' --windowed main.py -F
+
 import tkinter as tk
 from tkinter import messagebox
 import random
