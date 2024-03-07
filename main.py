@@ -244,7 +244,7 @@ class XrayMeasure:
 
 def main():
     root = tk.Tk()
-    app = XrayMeasure(root)
+    XrayMeasure(root)
     root.mainloop()
 
 
