@@ -52,6 +52,8 @@ def calibrate_motion(self, event):
 def calibrate_release(self, event):
     self.canvas.unbind("<B1-Motion>")
     self.canvas.unbind("<ButtonRelease-1>")
+    self.measure1 = (int(self.measure1[0] * self.image_scale_x), int(self.measure1[1] * self.image_scale_y))
+    self.measure2 = (int(self.measure2[0] * self.image_scale_x), int(self.measure2[1] * self.image_scale_y))
 
     distance_pixels = math.sqrt(
         (self.measure2[0] - self.measure1[0]) ** 2 + (self.measure2[1] - self.measure1[1]) ** 2)
@@ -101,9 +103,10 @@ def load_calibration_data(self):
             # Load calibration data from file
             with open(calibration_filepath, "r") as calib_file:
                 calibration_data = json.load(calib_file)
-                pixels_per_mm = calibration_data.get("pixels_per_mm")
-                if pixels_per_mm:
-                    print(f"Laddar sparad kalibrering för {filename}: {pixels_per_mm:.2f} pixlar per mm")
+                self.pixels_per_mm = calibration_data.get("pixels_per_mm")
+                if self.pixels_per_mm:
+                    print(f"Laddar sparad kalibrering för {filename}: {self.pixels_per_mm:.2f} pixlar per mm")
+                    self.calibration_done = True
                 else:
                     print(f"Ingen sparad kalibrering för{filename}")
         else:
