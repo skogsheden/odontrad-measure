@@ -23,7 +23,13 @@ def draw_rectangle(self, event):
 
 def end_rectangle(self, event):
     if self.annotation_start_point and self.annotation_end_point:
-        name = simpledialog.askstring("Ange tand", "Skriv in namnet på tanden:")
+        if self.annotate_angle:
+            name = simpledialog.askstring("Ange tand", "Skriv in namnet på tanden:")
+            angel = simpledialog.askstring("Ange vinkel",
+                                          "0: Saknad, 1: vertikal, 2: mesial, 3: distal, 4: horisontell, 5: övrigt")
+        else:
+            name = simpledialog.askstring("Ange tand", "Skriv in namnet på tanden:")
+
         if not name:
             name = "NA"  # No id provided
         if name:
@@ -36,18 +42,36 @@ def end_rectangle(self, event):
             text_x = min(x1, x2)
             text_y = min(y1, y2)
 
+            x1 = x1 * self.image_scale_x
+            x2 = x2 * self.image_scale_x
+            y1 = y1 * self.image_scale_y
+            y2 = y2 * self.image_scale_y
+
             # Store data
-            rectangle = {
-                "image": self.image_filename,
-                "tooth_id": name,
-                "coordinates": ((x1, y1), (x2, y2)),  # Store the new coordinates
-                "rect": self.rect,
-                "text": self.canvas.create_text(text_x, text_y, text=name, anchor=tk.NW,
-                                                fill=self.annotation_current_color),
-                "color": self.annotation_current_color,
-            }
+            if self.annotate_angle:
+                rectangle = {
+                    "image": self.image_filename,
+                    "tooth_id": name,
+                    "angle": angel,
+                    "coordinates": ((x1, y1), (x2, y2)),  # Store the new coordinates
+                    "rect": self.rect,
+                    "text": self.canvas.create_text(text_x, text_y, text=name, anchor=tk.NW,
+                                                    fill=self.annotation_current_color),
+                    "color": self.annotation_current_color,
+                }
+            else:
+                rectangle = {
+                    "image": self.image_filename,
+                    "tooth_id": name,
+                    "coordinates": ((x1, y1), (x2, y2)),  # Store the new coordinates
+                    "rect": self.rect,
+                    "text": self.canvas.create_text(text_x, text_y, text=name, anchor=tk.NW,
+                                                    fill=self.annotation_current_color),
+                    "color": self.annotation_current_color,
+                }
             self.canvas.itemconfigure(rectangle["rect"], state="normal")
             self.rectangles.append(rectangle)
+            print(rectangle)
             # Rita namnet i det övre vänstra hörnet
 
         self.annotation_start_point = None
@@ -89,21 +113,37 @@ def save_annotations(self):
         # Create a dictionary to store all annotations
         annotations = {"image_filename": image_filename, "annotations": []}
         for rectangle_data in self.rectangles:
-            annotation = {
-                "tooth_id": rectangle_data["tooth_id"],
-                "coordinates": rectangle_data["coordinates"],
-                "color": rectangle_data["color"]
-            }
-            annotations["annotations"].append(annotation)
+            if self.annotate_angle:
+                annotation = {
+                    "tooth_id": rectangle_data["tooth_id"],
+                    "angle": rectangle_data["angle"],
+                    "coordinates": rectangle_data["coordinates"],
+                    "color": rectangle_data["color"]
+                }
+                annotations["annotations"].append(annotation)
+            else:
+                annotation = {
+                    "tooth_id": rectangle_data["tooth_id"],
+                    "coordinates": rectangle_data["coordinates"],
+                    "color": rectangle_data["color"]
+                }
+                annotations["annotations"].append(annotation)
         # Save the annotations to a .annot file
-        annot_filename = f"{image_filename}.annot"
+        if self.annotate_angle:
+            annot_filename = f"{image_filename}.angleannot"
+        else:
+            annot_filename = f"{image_filename}.annot"
+
         annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
         with open(annot_filepath, "w") as annot_file:
             json.dump(annotations, annot_file)
         print(f"Annoteringar sparade till: {annot_filepath}")
     else:
         # If there are no annotations, delete the annotation file if it exists
-        annot_filename = f"{image_filename}.annot"
+        if self.annotate_angle:
+            annot_filename = f"{image_filename}.angleannot"
+        else:
+            annot_filename = f"{image_filename}.annot"
         annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
         if os.path.exists(annot_filepath):
             os.remove(annot_filepath)
@@ -126,12 +166,22 @@ def load_annotations(self):
             tooth_id = annotation["tooth_id"]
             coordinates = annotation["coordinates"]
             color = annotation["color"]
-            x1, y1 = coordinates[0]
-            x2, y2 = coordinates[1]
-            rect = self.canvas.create_rectangle(x1, y1, x2, y2, outline=color)
+
+            # Recalculate to fit screen
+            img_x1, img_y1 = coordinates[0]
+            img_x2, img_y2 = coordinates[1]
+
+            print(self.image_scale_x, self.image_scale_y)
+            x1 = img_x1 / self.image_scale_x
+            x2 = img_x2 / self.image_scale_x
+            y1 = img_y1 / self.image_scale_y
+            y2 = img_y2 / self.image_scale_y
+
             text_x = min(x1, x2)
             text_y = min(y1, y2)
+            rect = self.canvas.create_rectangle(x1, y1, x2, y2, outline=color)
             text = self.canvas.create_text(text_x, text_y, text=tooth_id, anchor=tk.NW, fill=color)
+
             # Add the loaded rectangle to self.rectangles
             self.rectangles.append({
                 "tooth_id": tooth_id,

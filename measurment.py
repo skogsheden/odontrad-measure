@@ -38,10 +38,14 @@ def release(self, event, color):
         self.canvas.unbind("<ButtonRelease-3>")
 
     if self.measure2:
+        self.measure1 = (int(self.measure1[0] * self.image_scale_x), int(self.measure1[1] * self.image_scale_y))
+        self.measure2 = (int(self.measure2[0] * self.image_scale_x), int(self.measure2[1] * self.image_scale_y))
+        self.measurements[color].append((self.measure1, self.measure2))
         distance_pixels = math.sqrt(
             (self.measure2[0] - self.measure1[0]) ** 2 + (self.measure2[1] - self.measure1[1]) ** 2)
         if self.calibration_done:
             print(f"Sträcka: {distance_pixels} pixlar och {distance_pixels / self.pixels_per_mm} mm")
+            print(self.measure1, self.measure2)
         else:
             print(f"Sträcka: {distance_pixels} pixlar")
     else:
@@ -140,6 +144,7 @@ def save_measurement(self, event=None):
             if tooth_id == "NA":
                 if self.calibration_done:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels,
                         "blue_length_mm": blue_length_mm,
@@ -150,6 +155,7 @@ def save_measurement(self, event=None):
                     }
                 else:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels,
                         "green_coordinates": latest_green_measurement,
@@ -159,6 +165,7 @@ def save_measurement(self, event=None):
             else:
                 if self.calibration_done:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "tooth_id": tooth_id,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels,
@@ -170,6 +177,7 @@ def save_measurement(self, event=None):
                     }
                 else:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "tooth_id": tooth_id,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels,
@@ -205,18 +213,21 @@ def save_measurement(self, event=None):
             if tooth_id == "NA":
                 if self.calibration_done:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels,
                         "blue_length_mm": blue_length_mm
                     }
                 else:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels
                     }
             else:
                 if self.calibration_done:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "tooth_id": tooth_id,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels,
@@ -224,6 +235,7 @@ def save_measurement(self, event=None):
                     }
                 else:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "tooth_id": tooth_id,
                         "blue_coordinates": latest_blue_measurement,
                         "blue_length_pixels": blue_length_pixels
@@ -256,18 +268,21 @@ def save_measurement(self, event=None):
             if tooth_id == "NA":
                 if self.calibration_done:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "green_coordinates": latest_green_measurement,
                         "green_length_pixels": green_length_pixels,
                         "green_length_mm": green_length_mm
                     }
                 else:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "green_coordinates": latest_green_measurement,
                         "green_length_pixels": green_length_pixels
                     }
             else:
                 if self.calibration_done:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "tooth_id": tooth_id,
                         "green_coordinates": latest_green_measurement,
                         "green_length_pixels": green_length_pixels,
@@ -275,6 +290,7 @@ def save_measurement(self, event=None):
                     }
                 else:
                     measurement_info = {
+                        "filename": self.image_filename,
                         "tooth_id": tooth_id,
                         "green_coordinates": latest_green_measurement,
                         "green_length_pixels": green_length_pixels

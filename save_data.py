@@ -9,6 +9,8 @@ def save_measurements_to_file(self):
                 file.write(f"Examiner: {self.username}\n")
                 for measurement_info in self.save_measurement_list:
                     file.write(f"Filename: {self.image_filename}\n")
+                    if "filename" in measurement_info:
+                        file.write(f"Filename: {measurement_info['filename']}\n")
                     if 'tooth_id' in measurement_info:
                         file.write(f"Tooth id: {measurement_info['tooth_id']}\n")
                     if 'blue_coordinates' in measurement_info:

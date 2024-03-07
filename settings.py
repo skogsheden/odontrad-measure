@@ -42,7 +42,7 @@ def open_settings_window(self):
     string_var.set(self.username)
 
     # Ställ in storlek och padding
-    self.settings_window.geometry("400x180")
+    self.settings_window.geometry("400x200")
     self.settings_window['padx'] = 10
     self.settings_window['pady'] = 10
 
@@ -61,9 +61,14 @@ def open_settings_window(self):
     self.function2_checkbox = tk.Checkbutton(self.settings_window, variable=self.function2_enabled)
     self.function2_checkbox.grid(row=2, column=1, padx=10, pady=5, sticky=tk.W)
 
+    tk.Label(self.settings_window, text="Annotera angulering:").grid(row=3, column=0, sticky=tk.W, padx=10,
+                                                                          pady=5)
+    self.function3_checkbox = tk.Checkbutton(self.settings_window, variable=self.function3_enabled)
+    self.function3_checkbox.grid(row=3, column=1, padx=10, pady=5, sticky=tk.W)
+
     # Lägg till en knapp för att spara ändringar och stänga fönstret
     save_button = tk.Button(self.settings_window, text="Spara", command=self.save_user)
-    save_button.grid(row=3, column=0, columnspan=2, pady=10)
+    save_button.grid(row=4, column=0, columnspan=2, pady=10)
 
 
 def save_user(self):
@@ -76,7 +81,9 @@ def save_settings(self):
     settings = {
         "username": self.username,
         "function1_enabled": self.function1_enabled.get(),
-        "function2_enabled": self.function2_enabled.get()
+        "function2_enabled": self.function2_enabled.get(),
+        "function3_enabled": self.function3_enabled.get()
+
     }
     with open("settings.cfg", "w") as file:
         json.dump(settings, file)
@@ -89,11 +96,13 @@ def load_settings(self):
             self.username = settings.get("username", "")
             self.function1_enabled.set(settings.get("function1_enabled", False))
             self.function2_enabled.set(settings.get("function2_enabled", False))
+            self.function3_enabled.set(settings.get("function3_enabled", False))
     except FileNotFoundError:
         # Default settings if the file doesn't exist
         self.username = ""
         self.function1_enabled.set(False)
         self.function2_enabled.set(False)
+        self.function3_enabled.set(False)
     print(self.function1_enabled.get(), self.function2_enabled.get())
 
 def clear_all_saved(self):
