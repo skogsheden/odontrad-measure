@@ -12,7 +12,7 @@ Key Features:
 - Annotation Functionality: Allows users to annotate images and associate teeth IDs for automatic annotation of measurements. Annotations are automatically stored and loaded for enhanced workflow efficiency.
 
 When referencing OdontRad Measurement in scientific papers or research, please utilize the following citation format:
-Gustafsson, N. (2024). OdontRad Measurement (Version 0.1.4). [Software]. GitHub. Available at: [https://github.com/skogsheden/odontrad-measure/]
+Gustafsson, N. (2024). OdontRad Measurement (Version 0.1.5). [Software]. GitHub. Available at: [https://github.com/skogsheden/odontrad-measure/]
 
 Additional Information:
 For comprehensive installation instructions, usage guidelines, and updates, please consult the documentation provided within the GitHub repository.

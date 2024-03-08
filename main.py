@@ -1,7 +1,7 @@
 __author__ = "Nils Gustafsson"
 __copyright__ = "Copyright 2024, Skogsheden"
 __license__ = "GPL 3.0"
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __maintainer__ = "Nils Gustafsson"
 __email__ = "nils.gustafsson@umu.se"
 __status__ = "Development"
@@ -11,6 +11,8 @@ __status__ = "Development"
 import tkinter as tk
 from tkinter import messagebox
 import random
+from PIL import ImageTk, Image, ImageEnhance
+import cv2
 
 # Import from other files
 import settings
@@ -29,8 +31,11 @@ class XrayMeasure:
         # Canvas
         self.canvas = tk.Canvas(self.master, cursor="cross")
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas_image = None
 
         # Image load
+        self.image_list = {}
+        self.image_current_id = 0
         self.image = None
         self.photo_image = None
         self.image_filename = None
@@ -75,9 +80,7 @@ class XrayMeasure:
         self.master.config(menu=menubar)
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Öppna bild (o)", command=self.open_image)
-        # file_menu.add_command(label="Öppna mapp (p)", command=self.open_image)
-        # file_menu.add_command(label="Nästa bild(n)", command=self.open_image)
-        # file_menu.add_command(label="Föregående bild(b)", command=self.open_image)
+        file_menu.add_command(label="Öppna mapp (p)", command=self.open_folder)
         file_menu.add_separator()
         file_menu.add_command(label="Exportera mätningar", command=self.save_measurements_to_file)
         file_menu.add_command(label="Importera mätningar", command=self.load_measurements_from_file)
@@ -86,6 +89,12 @@ class XrayMeasure:
         file_menu.add_separator()
         file_menu.add_command(label="Avsluta (q)", command=self.exit)
         menubar.add_cascade(label="Arkiv", menu=file_menu)
+
+        image_menu = tk.Menu(menubar, tearoff=0)
+        image_menu.add_command(label="Nästa bild (n)", command=self.open_next)
+        image_menu.add_command(label="Föregående bild (b)", command=self.open_prev)
+        image_menu.add_command(label="Bildjustering", command=self.adjust_brightness_contrast)
+        menubar.add_cascade(label="Bild", menu=image_menu)
 
         mesaurment_menu = tk.Menu(menubar, tearoff=0)
         mesaurment_menu.add_command(label="Dölj/Visa (g)", command=self.toggle_lines_visibility)
@@ -119,6 +128,9 @@ class XrayMeasure:
         self.master.bind("v", self.show_saved_measurements)
         self.master.bind("c", self.calibrate_pixels_to_mm)
         self.master.bind("h", lambda event: self.toggle_rectangles_visibility())
+        self.master.bind("n", self.open_next)
+        self.master.bind("b", self.open_prev)
+        self.master.bind("p", self.open_folder)
 
         # Load settings from file
         settings.load_settings(self)
@@ -127,12 +139,105 @@ class XrayMeasure:
         settings.save_settings(self)  # Save settings before exiting
         self.master.destroy()
 
+    def adjust_brightness_contrast(self):
+        adjust_window = tk.Toplevel(self.master)
+        adjust_window.title("Justera ljusstyrka, kontrast och skärpa")
+
+        initial_brightness = 1.0  # Initial brightness
+        initial_contrast = 1.0  # Initial contrast
+        initial_sharpness = 1.0  # Initial sharpness
+
+        brightness_label = tk.Label(adjust_window, text="Ljusstyrka")
+        brightness_label.grid(row=0, column=0, padx=10, pady=5)
+        brightness_slider = tk.Scale(adjust_window, from_=0, to=400, orient=tk.HORIZONTAL,
+                                     command=lambda value: self.apply_adjustments(float(value) / 100,
+                                                                                  float(contrast_slider.get()) / 100,
+                                                                                  float(sharpness_slider.get()) / 100))
+        brightness_slider.set(initial_brightness * 100)
+        brightness_slider.grid(row=0, column=1, padx=10, pady=5)
+
+        contrast_label = tk.Label(adjust_window, text="Kontrast")
+        contrast_label.grid(row=1, column=0, padx=10, pady=5)
+        contrast_slider = tk.Scale(adjust_window, from_=0, to=400, orient=tk.HORIZONTAL,
+                                   command=lambda value: self.apply_adjustments(float(brightness_slider.get()) / 100,
+                                                                                float(value) / 100,
+                                                                                float(sharpness_slider.get()) / 100))
+        contrast_slider.set(initial_contrast * 100)
+        contrast_slider.grid(row=1, column=1, padx=10, pady=5)
+
+        sharpness_label = tk.Label(adjust_window, text="Skärpa")
+        sharpness_label.grid(row=2, column=0, padx=10, pady=5)
+        sharpness_slider = tk.Scale(adjust_window, from_=0, to=400, orient=tk.HORIZONTAL,
+                                    command=lambda value: self.apply_adjustments(float(brightness_slider.get()) / 100,
+                                                                                 float(contrast_slider.get()) / 100,
+                                                                                 float(value) / 100))
+        sharpness_slider.set(initial_sharpness * 100)
+        sharpness_slider.grid(row=2, column=1, padx=10, pady=5)
+
+        reset_button = tk.Button(adjust_window, text="Återställ",
+                                 command=lambda: self.reset_adjustments(brightness_slider, contrast_slider,
+                                                                        sharpness_slider))
+        reset_button.grid(row=3, column=0, columnspan=2, pady=10)
+
+    def reset_adjustments(self, brightness_slider, contrast_slider, sharpness_slider):
+        brightness_slider.set(100)
+        contrast_slider.set(100)
+        sharpness_slider.set(100)
+        self.apply_adjustments(1.0, 1.0, 1.0)  # Reset adjustments to default values
+
+    def apply_adjustments(self, brightness, contrast, sharpness):
+        if self.image:
+            contrast_img = ImageEnhance.Contrast(self.image)
+            adjusted_image = contrast_img.enhance(contrast)
+            brightness_img = ImageEnhance.Brightness(adjusted_image)
+            adjusted_image = brightness_img.enhance(brightness)
+            sharpness_img = ImageEnhance.Sharpness(adjusted_image)
+            adjusted_image = sharpness_img.enhance(sharpness)
+            self.photo_image = ImageTk.PhotoImage(adjusted_image)
+
+            # Update canvas image
+            if self.canvas_image:
+                self.canvas.itemconfig(self.canvas_image, image=self.photo_image)
+
     # Load data
     def open_image(self, event=None):
         self.rectangles.clear()
         load_data.open_image(self)
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
         self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
+
+    def open_folder(self, event=None):
+        self.rectangles.clear()
+        load_data.load_images_from_folder(self)
+        self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
+        self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
+        load_data.open_image_from_list(self, self.image_current_id)
+
+    def open_next(self, event=None):
+        if len(self.image_list) > 0:
+            if self.image_current_id < len(self.image_list):
+                self.image_current_id = self.image_current_id + 1
+                self.rectangles.clear()
+                self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
+                self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
+                load_data.open_image_from_list(self, self.image_current_id)
+            else:
+                print("Sista bilden i mappen")
+        else:
+            print("Inga bilder laddade")
+
+    def open_prev(self, event=None):
+        if len(self.image_list) > 0:
+            if self.image_current_id > 0:
+                self.image_current_id = self.image_current_id - 1
+                self.rectangles.clear()
+                self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
+                self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
+                load_data.open_image_from_list(self, self.image_current_id)
+            else:
+                print("Första bilden i mappen")
+        else:
+            print("Inga bilder laddade")
 
     def load_measurements_from_file(self):
         load_data.load_measurements_from_file(self)
@@ -252,7 +357,7 @@ class XrayMeasure:
 
 def main():
     root = tk.Tk()
-    XrayMeasure(root)
+    app = XrayMeasure(root)
     root.mainloop()
 
 

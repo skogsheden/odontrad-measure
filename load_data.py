@@ -1,6 +1,49 @@
 import tkinter as tk
+import os
 from tkinter import filedialog, simpledialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
+
+
+def load_images_from_folder(self):
+    folder_path = filedialog.askdirectory()
+    image_files = [f for f in os.listdir(folder_path) if
+                   os.path.isfile(os.path.join(folder_path, f)) and f.lower().endswith(
+                       ('.jpg', '.jpeg', '.png', '.tiff'))]
+    self.image_list = [os.path.join(folder_path, file_name) for file_name in image_files]
+    self.image_current_id = 0
+def open_image_from_list(self, index):
+    if 0 <= index < len(self.image_list):
+        self.image_filepath = self.image_list[index]
+        original_image = Image.open(self.image_filepath)
+        # Rescale the image to fit the screen while preserving pixel values
+        img_height = original_image.height
+        img_width = original_image.width
+        if img_height > img_width:
+            img_q = img_width / img_height
+            screen_height = self.canvas.winfo_screenheight()
+            screen_width = round(screen_height * img_q)
+        else:
+            img_q = img_width / img_height
+            screen_width = self.canvas.winfo_screenwidth()
+            screen_height = round(screen_width / img_q)
+        resized_image = original_image.resize((screen_width, screen_height), Image.LANCZOS)
+        self.image = resized_image
+        self.photo_image = ImageTk.PhotoImage(self.image)
+        self.canvas.config(width=screen_width, height=screen_height)
+        self.canvas_image = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo_image)
+        self.draw = ImageDraw.Draw(self.image)
+        filename_parts = self.image_filepath.split('/')
+        self.image_filename = filename_parts[-1]  # Sista delen är filnamnet, hela path behövs ej
+
+        # Calculate scale conversion
+        self.image_scale_x = img_width / screen_width
+        self.image_scale_y = img_height / screen_height
+
+        self.load_annotations()
+        self.load_calibration_data()
+        print("Bild laddad från listan")
+    else:
+        print("Utanför index")
 
 
 def open_image(self):
@@ -19,11 +62,11 @@ def open_image(self):
             img_q = img_width / img_height
             screen_width = self.canvas.winfo_screenwidth()
             screen_height = round(screen_width / img_q)
-        resized_image = original_image.resize((screen_width, screen_height), Image.LANCZOS )
+        resized_image = original_image.resize((screen_width, screen_height), Image.LANCZOS)
         self.image = resized_image
         self.photo_image = ImageTk.PhotoImage(self.image)
         self.canvas.config(width=screen_width, height=screen_height)
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo_image)
+        self.canvas_image = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo_image)
         self.draw = ImageDraw.Draw(self.image)
         filename_parts = file_path.split('/')
         self.image_filename = filename_parts[-1]  # Sista delen är filnamnet, hela path behövs ej
@@ -104,15 +147,19 @@ def load_measurements_from_file(self, line_color=None):
                 for measurement in measurements:
                     if "blue_coordinates" in measurement:
                         blue_coordinates = measurement["blue_coordinates"]
-                        self.saved_lines.append(self.canvas.create_line(blue_coordinates[0][0]/self.image_scale_x, blue_coordinates[0][1]/self.image_scale_y,
-                                                                        blue_coordinates[1][0]/self.image_scale_x,
-                                                                        blue_coordinates[1][1]/self.image_scale_y, fill="blue", width=2))
+                        self.saved_lines.append(self.canvas.create_line(blue_coordinates[0][0] / self.image_scale_x,
+                                                                        blue_coordinates[0][1] / self.image_scale_y,
+                                                                        blue_coordinates[1][0] / self.image_scale_x,
+                                                                        blue_coordinates[1][1] / self.image_scale_y,
+                                                                        fill="blue", width=2))
                     if "green_coordinates" in measurement:
                         green_coordinates = measurement["green_coordinates"]
                         self.saved_lines.append(
-                            self.canvas.create_line(green_coordinates[0][0]/self.image_scale_x, green_coordinates[0][1]/self.image_scale_y,
-                                                    green_coordinates[1][0]/self.image_scale_x,
-                                                    green_coordinates[1][1]/self.image_scale_y, fill="green", width=2))
+                            self.canvas.create_line(green_coordinates[0][0] / self.image_scale_x,
+                                                    green_coordinates[0][1] / self.image_scale_y,
+                                                    green_coordinates[1][0] / self.image_scale_x,
+                                                    green_coordinates[1][1] / self.image_scale_y, fill="green",
+                                                    width=2))
             else:
                 messagebox.showerror("Inga mätningar hittades",
                                      "Inga mätningar för den aktuella bilden hittades i filen.")
@@ -120,4 +167,3 @@ def load_measurements_from_file(self, line_color=None):
             messagebox.showerror("Fel fil öppnad",
                                  f"Ingen information hittades för den aktuella bilden \"{self.image_filename}\".")
         measurements = {}
-

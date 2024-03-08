@@ -12,7 +12,7 @@ def show_program_info(self):
     Annotera bilderna med tandnummer för
     att automatisk registera tandnummer för mätningar. 
 
-    Version: 0.1.4 (2024.03)
+    Version: 0.1.5 (2024.03)
     Skapat av: Nils Gustafsson 
     """
     messagebox.showinfo("Om", info_text)
