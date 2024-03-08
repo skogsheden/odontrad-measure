@@ -11,21 +11,33 @@ def load_images_from_folder(self):
                        ('.jpg', '.jpeg', '.png', '.tiff'))]
     self.image_list = [os.path.join(folder_path, file_name) for file_name in image_files]
     self.image_current_id = 0
+
+
 def open_image_from_list(self, index):
     if 0 <= index < len(self.image_list):
+        if self.rectangles:
+            for rectangle in self.rectangles:
+                last_rectangle = rectangle["rect"]
+                last_text = rectangle["text"]
+                self.canvas.delete(last_rectangle)  # Delete the rectangle from the canvas
+                self.canvas.delete(last_text)
+            self.rectangles.clear()
+
         self.image_filepath = self.image_list[index]
         original_image = Image.open(self.image_filepath)
+        screen_q = self.canvas.winfo_screenwidth() / self.canvas.winfo_screenheight()
         # Rescale the image to fit the screen while preserving pixel values
         img_height = original_image.height
         img_width = original_image.width
-        if img_height > img_width:
-            img_q = img_width / img_height
-            screen_height = self.canvas.winfo_screenheight()
-            screen_width = round(screen_height * img_q)
-        else:
-            img_q = img_width / img_height
-            screen_width = self.canvas.winfo_screenwidth()
+        img_q = img_width / img_height
+        print(screen_q, img_q)
+        if img_q > screen_q:
+            screen_width = self.canvas.winfo_screenwidth() - 100
             screen_height = round(screen_width / img_q)
+        else:
+            screen_height = self.canvas.winfo_screenheight() - 150
+            screen_width = round(screen_height * img_q)
+
         resized_image = original_image.resize((screen_width, screen_height), Image.LANCZOS)
         self.image = resized_image
         self.photo_image = ImageTk.PhotoImage(self.image)
@@ -48,20 +60,29 @@ def open_image_from_list(self, index):
 
 def open_image(self):
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.tiff")])
+    if self.rectangles:
+        for rectangle in self.rectangles:
+            last_rectangle = rectangle["rect"]
+            last_text = rectangle["text"]
+            self.canvas.delete(last_rectangle)  # Delete the rectangle from the canvas
+            self.canvas.delete(last_text)
+        self.rectangles.clear()
+
     if file_path:
         self.image_filepath = file_path
-        original_image = Image.open(file_path)
+        original_image = Image.open(self.image_filepath)
+        screen_q = self.canvas.winfo_screenwidth() / self.canvas.winfo_screenheight()
         # Rescale the image to fit the screen while preserving pixel values
         img_height = original_image.height
         img_width = original_image.width
-        if img_height > img_width:
-            img_q = img_width / img_height
-            screen_height = self.canvas.winfo_screenheight()
-            screen_width = round(screen_height * img_q)
-        else:
-            img_q = img_width / img_height
-            screen_width = self.canvas.winfo_screenwidth()
+        img_q = img_width / img_height
+        print(screen_q, img_q)
+        if img_q > screen_q:
+            screen_width = self.canvas.winfo_screenwidth() - 100
             screen_height = round(screen_width / img_q)
+        else:
+            screen_height = self.canvas.winfo_screenheight() - 150
+            screen_width = round(screen_height * img_q)
         resized_image = original_image.resize((screen_width, screen_height), Image.LANCZOS)
         self.image = resized_image
         self.photo_image = ImageTk.PhotoImage(self.image)
