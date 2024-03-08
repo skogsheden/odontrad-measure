@@ -107,8 +107,11 @@ def save_measurement(self, event=None):
                     tooth_id = matching_rectangles[0]["tooth_id"]
             else:
                 # No matching rectangles found
-                tooth_id = simpledialog.askstring("Ingen träff - Ange tand", "Skriv in namnet på tanden:")
-                if not tooth_id:
+                if self.function1_enabled.get():
+                    tooth_id = simpledialog.askstring("Ingen träff - Ange tand", "Skriv in namnet på tanden:")
+                    if not tooth_id:
+                        tooth_id = "NA"
+                else:
                     tooth_id = "NA"
         else:
             # No rectangles present

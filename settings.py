@@ -12,7 +12,7 @@ def show_program_info(self):
     Annotera bilderna med tandnummer för
     att automatisk registera tandnummer för mätningar. 
 
-    Version: 0.1.3 (2024.03)
+    Version: 0.1.4 (2024.03)
     Skapat av: Nils Gustafsson 
     """
     messagebox.showinfo("Om", info_text)
@@ -61,11 +61,6 @@ def open_settings_window(self):
     self.function2_checkbox = tk.Checkbutton(self.settings_window, variable=self.function2_enabled)
     self.function2_checkbox.grid(row=2, column=1, padx=10, pady=5, sticky=tk.W)
 
-    tk.Label(self.settings_window, text="Annotera angulering:").grid(row=3, column=0, sticky=tk.W, padx=10,
-                                                                          pady=5)
-    self.function3_checkbox = tk.Checkbutton(self.settings_window, variable=self.function3_enabled)
-    self.function3_checkbox.grid(row=3, column=1, padx=10, pady=5, sticky=tk.W)
-
     # Lägg till en knapp för att spara ändringar och stänga fönstret
     save_button = tk.Button(self.settings_window, text="Spara", command=self.save_user)
     save_button.grid(row=4, column=0, columnspan=2, pady=10)
@@ -82,7 +77,6 @@ def save_settings(self):
         "username": self.username,
         "function1_enabled": self.function1_enabled.get(),
         "function2_enabled": self.function2_enabled.get(),
-        "function3_enabled": self.function3_enabled.get()
 
     }
     with open("settings.cfg", "w") as file:
@@ -96,14 +90,12 @@ def load_settings(self):
             self.username = settings.get("username", "")
             self.function1_enabled.set(settings.get("function1_enabled", False))
             self.function2_enabled.set(settings.get("function2_enabled", False))
-            self.function3_enabled.set(settings.get("function3_enabled", False))
     except FileNotFoundError:
         # Default settings if the file doesn't exist
         self.username = ""
         self.function1_enabled.set(False)
         self.function2_enabled.set(False)
-        self.function3_enabled.set(False)
-    print(self.function1_enabled.get(), self.function2_enabled.get())
+
 
 def clear_all_saved(self):
     for line in self.blue_lines:

@@ -1,16 +1,16 @@
 __author__ = "Nils Gustafsson"
 __copyright__ = "Copyright 2024, Skogsheden"
 __license__ = "GPL 3.0"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __maintainer__ = "Nils Gustafsson"
 __email__ = "nils.gustafsson@umu.se"
 __status__ = "Development"
 
+# Executable built with command: pyinstaller --name 'odontrad-measure' --icon 'icon.ico' --windowed main.py -F
+
 import tkinter as tk
 from tkinter import messagebox
 import random
-# import torch
-# import os
 
 # Import from other files
 import settings
@@ -19,7 +19,7 @@ import measurment
 import calibration
 import save_data
 import load_data
-# import ai
+
 
 class XrayMeasure:
     def __init__(self, master):
@@ -59,8 +59,6 @@ class XrayMeasure:
         self.username = ""
         self.function1_enabled = tk.BooleanVar(value=False)  # Fråga om tandyta: Aktiverad
         self.function2_enabled = tk.BooleanVar(value=False)  # Behåll linjer: Aktiverad
-        self.function3_enabled = tk.BooleanVar(value=False)  # Annotera vinkel
-
 
         # Annotation
         self.annotation_active = False
@@ -78,7 +76,9 @@ class XrayMeasure:
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Öppna bild", command=self.open_image)
         file_menu.add_separator()
-        file_menu.add_command(label="Spara mätningar till fil", command=self.save_measurements_to_file)
+        file_menu.add_command(label="Exportera mätningar", command=self.save_measurements_to_file)
+        file_menu.add_command(label="Importera mätningar", command=self.load_measurements_from_file)
+        file_menu.add_separator()
         file_menu.add_command(label="Inställningar", command=self.open_settings_window)
         file_menu.add_separator()
         file_menu.add_command(label="Avsluta", command=self.exit)
@@ -86,7 +86,6 @@ class XrayMeasure:
 
         mesaurment_menu = tk.Menu(menubar, tearoff=0)
         mesaurment_menu.add_command(label="Dölj/Visa ", command=self.toggle_lines_visibility)
-        mesaurment_menu.add_command(label="Importera", command=self.load_measurements_from_file)
         mesaurment_menu.add_command(label="Visa sparade", command=self.show_saved_measurements)
         mesaurment_menu.add_command(label="Rensa sparade", command=self.clear_all_saved)
         menubar.add_cascade(label="Mätningar", menu=mesaurment_menu)
@@ -117,26 +116,6 @@ class XrayMeasure:
         # Load settings from file
         settings.load_settings(self)
 
-    # def prep_material(self):
-    #     model_path = "C:\\GitHub\\odontrad-measure\\calib\\model.pth"
-    #
-    #     if os.path.exists(model_path):
-    #         # If the model file exists, load the model from the file
-    #         model = torch.load(model_path)
-    #         print("Model loaded from file.")
-    #     else:
-    #         # If the model file doesn't exist, train a new model
-    #         images, annotations = ai.load_data("C:\\GitHub\\odontrad-measure\\calib")
-    #         print("Number of images:", len(images))
-    #         print("Number of annotations:", len(annotations))
-    #         print("Sample annotation:", annotations[0])
-    #         model = ai.train_model(images, annotations, num_epochs=20)
-    #
-    #         # Save the trained model to the specified directory
-    #         torch.save(model, model_path)
-    #         print("Model saved to file.")
-    #     ai.predict_and_show(model, "C:\\GitHub\\odontrad-measure\\calib\\15.jpg")
-
     def exit(self, event=None):
         settings.save_settings(self)  # Save settings before exiting
         self.master.destroy()
@@ -147,9 +126,6 @@ class XrayMeasure:
         load_data.open_image(self)
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
         self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
-
-    # def ai_visualize_data(self):
-    #     ai.visualize_data(self.rectangles, self.image)
 
     def load_measurements_from_file(self):
         load_data.load_measurements_from_file(self)
@@ -270,7 +246,7 @@ class XrayMeasure:
 
 def main():
     root = tk.Tk()
-    app = XrayMeasure(root)
+    XrayMeasure(root)
     root.mainloop()
 
 
