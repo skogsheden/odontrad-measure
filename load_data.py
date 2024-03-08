@@ -96,7 +96,6 @@ def load_measurements_from_file(self, line_color=None):
                         else:
                             found_matching_file = False
             measurements.append(current_measurement)  # If end reached save last measurement
-            print(measurements)
             self.save_measurement_list.append(current_measurement)
         if found_matching_file:
             if measurements:

@@ -136,7 +136,6 @@ def load_annotations(self):
             img_x1, img_y1 = coordinates[0]
             img_x2, img_y2 = coordinates[1]
 
-            print(self.image_scale_x, self.image_scale_y)
             x1 = img_x1 / self.image_scale_x
             x2 = img_x2 / self.image_scale_x
             y1 = img_y1 / self.image_scale_y

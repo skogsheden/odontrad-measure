@@ -74,31 +74,33 @@ class XrayMeasure:
         menubar = tk.Menu(self.master)
         self.master.config(menu=menubar)
         file_menu = tk.Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Öppna bild", command=self.open_image)
+        file_menu.add_command(label="Öppna bild (o)", command=self.open_image)
+        # file_menu.add_command(label="Öppna mapp (p)", command=self.open_image)
+        # file_menu.add_command(label="Nästa bild(n)", command=self.open_image)
+        # file_menu.add_command(label="Föregående bild(b)", command=self.open_image)
         file_menu.add_separator()
         file_menu.add_command(label="Exportera mätningar", command=self.save_measurements_to_file)
         file_menu.add_command(label="Importera mätningar", command=self.load_measurements_from_file)
         file_menu.add_separator()
         file_menu.add_command(label="Inställningar", command=self.open_settings_window)
         file_menu.add_separator()
-        file_menu.add_command(label="Avsluta", command=self.exit)
+        file_menu.add_command(label="Avsluta (q)", command=self.exit)
         menubar.add_cascade(label="Arkiv", menu=file_menu)
 
         mesaurment_menu = tk.Menu(menubar, tearoff=0)
-        mesaurment_menu.add_command(label="Dölj/Visa ", command=self.toggle_lines_visibility)
-        mesaurment_menu.add_command(label="Visa sparade", command=self.show_saved_measurements)
+        mesaurment_menu.add_command(label="Dölj/Visa (g)", command=self.toggle_lines_visibility)
+        mesaurment_menu.add_command(label="Visa sparade (v)", command=self.show_saved_measurements)
         mesaurment_menu.add_command(label="Rensa sparade", command=self.clear_all_saved)
         menubar.add_cascade(label="Mätningar", menu=mesaurment_menu)
 
         annotation_menu = tk.Menu(menubar, tearoff=0)
-        annotation_menu.add_command(label="Starta", command=self.annotate)
-        annotation_menu.add_command(label="Stoppa", command=self.stop_annotation)
+        annotation_menu.add_command(label="Starta/stoppa (a)", command=self.toggle_annotate)
         annotation_menu.add_separator()
-        annotation_menu.add_command(label="Dölj/Visa", command=self.toggle_rectangles_visibility)
+        annotation_menu.add_command(label="Dölj/Visa (h)", command=self.toggle_rectangles_visibility)
         menubar.add_cascade(label="Annotering", menu=annotation_menu)
 
         settings_menu = tk.Menu(menubar, tearoff=0)
-        settings_menu.add_command(label="Kalibrera i bilden", command=self.calibrate_pixels_to_mm)
+        settings_menu.add_command(label="Kalibrera i bilden (c)", command=self.calibrate_pixels_to_mm)
         settings_menu.add_command(label="Ange pixlar per mm", command=self.set_pixels_per_mm)
         settings_menu.add_command(label="Ange pixelstorlek", command=self.set_pixels_size)
         menubar.add_cascade(label="Kalibrering", menu=settings_menu)
@@ -110,7 +112,12 @@ class XrayMeasure:
 
         # Bind keyboard shortcuts
         self.master.bind("q", self.exit)
+        self.master.bind("a", self.toggle_annotate)
+        self.master.bind("o", self.open_image)
+        self.master.bind("g", self.toggle_lines_visibility)
         self.master.bind("s", self.save_measurement)
+        self.master.bind("v", self.show_saved_measurements)
+        self.master.bind("c", self.calibrate_pixels_to_mm)
         self.master.bind("h", lambda event: self.toggle_rectangles_visibility())
 
         # Load settings from file
@@ -121,7 +128,7 @@ class XrayMeasure:
         self.master.destroy()
 
     # Load data
-    def open_image(self):
+    def open_image(self, event=None):
         self.rectangles.clear()
         load_data.open_image(self)
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
@@ -168,7 +175,7 @@ class XrayMeasure:
     def set_pixels_size(self):
         calibration.set_pixels_size(self)
 
-    def calibrate_pixels_to_mm(self):
+    def calibrate_pixels_to_mm(self, event=None):
         calibration.calibrate_pixels_to_mm(self)
 
     def calibrate_click(self, event):
@@ -196,25 +203,29 @@ class XrayMeasure:
     def save_measurement(self, event=None):
         measurment.save_measurement(self, event=None)
 
-    def show_saved_measurements(self):
+    def show_saved_measurements(self, event=None):
         measurment.show_saved_measurements(self)
 
-    def toggle_lines_visibility(self):
+    def toggle_lines_visibility(self, event=None):
         measurment.toggle_lines_visibility(self)
 
     # Annotation
-    def annotate(self):
-        self.canvas.unbind("<Button-1>")
-        self.canvas.unbind("<Button-3>")
-        self.canvas.bind("<Button-1>", self.start_rectangle)
-        self.canvas.bind("<B1-Motion>", self.draw_rectangle)
-        self.canvas.bind("<ButtonRelease-1>", self.end_rectangle)
-        self.canvas.bind("<Button-3>", self.delete_last_rectangle)
-        self.master.bind("<Escape>", self.stop_annotation)
-        messagebox.showinfo("Annotering",
-                            "Tryck ned vänster musknapp och markera tänderna du vill annotera.\n"
-                            "Höger musknapp raderar senaste annotering.\n"
-                            "Tryck på Escape för att avsluta annotering.")
+    def toggle_annotate(self, event=None):
+        if self.annotation_active == False:
+            self.annotation_active = True
+            self.canvas.unbind("<Button-1>")
+            self.canvas.unbind("<Button-3>")
+            self.canvas.bind("<Button-1>", self.start_rectangle)
+            self.canvas.bind("<B1-Motion>", self.draw_rectangle)
+            self.canvas.bind("<ButtonRelease-1>", self.end_rectangle)
+            self.canvas.bind("<Button-3>", self.delete_last_rectangle)
+            messagebox.showinfo("Annotering",
+                                "Tryck ned vänster musknapp och markera tänderna du vill annotera.\n"
+                                "Höger musknapp raderar senaste annotering.\n"
+                                "Tryck på Escape för att avsluta annotering.")
+        else:
+            self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
+            self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
 
     def start_rectangle(self, event):
         annotation.start_rectangle(self, event)
@@ -231,11 +242,6 @@ class XrayMeasure:
 
     def delete_last_rectangle(self, event):
         annotation.delete_last_rectangle(self, event)
-
-    def stop_annotation(self, event=None):
-        self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
-        self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
-        self.canvas.unbind("<Escape>")
 
     def toggle_rectangles_visibility(self):
         annotation.toggle_rectangles_visibility(self)
