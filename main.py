@@ -221,6 +221,7 @@ class XrayMeasure:
                 self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
                 self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
                 load_data.open_image_from_list(self, self.image_current_id)
+                self.annotation_active = False
             else:
                 print("Sista bilden i mappen")
         else:
@@ -234,6 +235,7 @@ class XrayMeasure:
                 self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
                 self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
                 load_data.open_image_from_list(self, self.image_current_id)
+                self.annotation_active = False
             else:
                 print("Första bilden i mappen")
         else:
@@ -331,6 +333,7 @@ class XrayMeasure:
         else:
             self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))
             self.canvas.bind("<Button-3>", lambda event: self.click(event, "right"))
+            self.annotation_active = False
 
     def start_rectangle(self, event):
         annotation.start_rectangle(self, event)

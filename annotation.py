@@ -2,6 +2,7 @@ from tkinter import simpledialog
 import tkinter as tk
 import os
 import json
+from PIL import Image
 
 
 def start_rectangle(self, event):
@@ -36,10 +37,10 @@ def end_rectangle(self, event):
             text_x = min(x1, x2)
             text_y = min(y1, y2)
 
-            x1 = x1 * self.image_scale_x
-            x2 = x2 * self.image_scale_x
-            y1 = y1 * self.image_scale_y
-            y2 = y2 * self.image_scale_y
+            x1 = int(x1 * self.image_scale_x)
+            x2 = int(x2 * self.image_scale_x)
+            y1 = int(y1 * self.image_scale_y)
+            y2 = int(y2 * self.image_scale_y)
 
             # Store data
             rectangle = {
@@ -90,25 +91,41 @@ def toggle_rectangles_visibility(self, event=None):
 def save_annotations(self):
     # Get the filename of the image without extension
     image_filename = os.path.splitext(os.path.basename(self.image_filepath))[0]
+
+    with Image.open(self.image_filepath) as img:
+        # Get image properties
+        mode_to_bpp = {'1': 1, 'L': 8, 'P': 8, 'RGB': 24, 'RGBA': 32, 'CMYK': 32, 'YCbCr': 24, 'I': 32, 'F': 32}
+        width, height = img.size
+        depth = mode_to_bpp[img.mode]
+
     # Save annotations only if there are any
     if self.rectangles:
         # Create a dictionary to store all annotations
-        annotations = {"image_filename": image_filename, "annotations": []}
+        annotations = {"filename": image_filename, "annotations": [],
+                       "size": [{"width": width, "height": height, "depth": depth}]}
         for rectangle_data in self.rectangles:
+            xmin = min(rectangle_data["coordinates"][0][0], rectangle_data["coordinates"][1][0])
+            ymin = min(rectangle_data["coordinates"][0][1], rectangle_data["coordinates"][1][1])
+            xmax = max(rectangle_data["coordinates"][0][0], rectangle_data["coordinates"][1][0])
+            ymax = max(rectangle_data["coordinates"][0][1], rectangle_data["coordinates"][1][1])
             annotation = {
-                "tooth_id": rectangle_data["tooth_id"],
-                "coordinates": rectangle_data["coordinates"],
-                "color": rectangle_data["color"]
+                "name": rectangle_data["tooth_id"],
+                "bndbox": {
+                    "xmin": xmin,
+                    "ymin": ymin,
+                    "xmax": xmax,
+                    "ymax": ymax
+                },
             }
             annotations["annotations"].append(annotation)
         # Save the annotations to a .annot file
-        annot_filename = f"{image_filename}.annot"
+        annot_filename = f"{image_filename}.json"
         annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
         with open(annot_filepath, "w") as annot_file:
             json.dump(annotations, annot_file)
         print(f"Annoteringar sparade till: {annot_filepath}")
     else:
-        annot_filename = f"{image_filename}.annot"
+        annot_filename = f"{image_filename}.json"
         annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
         if os.path.exists(annot_filepath):
             os.remove(annot_filepath)
@@ -121,16 +138,20 @@ def load_annotations(self):
     # Get the filename of the image without extension
     image_filename = os.path.splitext(os.path.basename(self.image_filepath))[0]
     # Check if annotation file exists
-    annot_filename = f"{image_filename}.annot"
+    annot_filename = f"{image_filename}.json"
     annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
     if os.path.exists(annot_filepath):
         with open(annot_filepath, "r") as annot_file:
             annotations = json.load(annot_file)
         # Draw rectangles based on annotations
         for annotation in annotations["annotations"]:
-            tooth_id = annotation["tooth_id"]
-            coordinates = annotation["coordinates"]
-            color = annotation["color"]
+            tooth_id = annotation["name"]
+            xmin = annotation["bndbox"]["xmin"]
+            ymin = annotation["bndbox"]["ymin"]
+            xmax = annotation["bndbox"]["xmax"]
+            ymax = annotation["bndbox"]["ymax"]
+            coordinates = ((xmin, ymax), (xmax, ymin))
+            color = self.generate_random_color()
 
             # Recalculate to fit screen
             img_x1, img_y1 = coordinates[0]
