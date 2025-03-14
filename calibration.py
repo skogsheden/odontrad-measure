@@ -5,21 +5,21 @@ import json
 
 
 def set_pixels_per_mm(self):
-    pixels_per_mm = simpledialog.askfloat("Ange pixlar per mm", "Ange antal pixlar per millimeter:")
+    pixels_per_mm = simpledialog.askfloat("Enter pixels per mm", "Enter number of pixels per millimeter:")
     if pixels_per_mm:
         self.pixels_per_mm = pixels_per_mm
-        messagebox.showinfo("Pixlar per mm inställda",
-                            f"Pixlar per mm inställda till: {pixels_per_mm:.2f} vilket motsvarar pixelstorleken {1 / pixels_per_mm:.2f}")
+        messagebox.showinfo("Pixels per mm set",
+                            f"Pixels per mm set to: {pixels_per_mm:.2f} which corresponds to pixel size {1 / pixels_per_mm:.2f}")
         self.calibration_done = True
         self.save_calibration_data()
 
 
 def set_pixels_size(self):
-    pixels_size = simpledialog.askfloat("Ange pixelstorlek", "Ange storleken på pixlarna i millimeter:")
+    pixels_size = simpledialog.askfloat("Enter pixel size", "Enter the size of pixels in millimeters:")
     if pixels_size:
         self.pixels_per_mm = 1 / pixels_size
-        messagebox.showinfo("Pixelstorleken inställd",
-                            f"Pixelstorleken är inställd till  {pixels_size} vilket motsvarar {self.pixels_per_mm:.2f} pixlar per mm ")
+        messagebox.showinfo("Pixel size set",
+                            f"The pixel size is set to {pixels_size} which corresponds to {self.pixels_per_mm:.2f} pixels per mm")
         self.calibration_done = True
         self.save_calibration_data()
 
@@ -28,8 +28,8 @@ def calibrate_pixels_to_mm(self):
     if self.image:
         self.calibration_done = False
         self.canvas.bind("<Button-1>", lambda event: self.calibrate_click(event))
-        messagebox.showinfo("Kalibrering",
-                            "Tryck ned vänster musknapp dra en linje över ett objekt med en känd längd.")
+        messagebox.showinfo("Calibration",
+                            "Press the left mouse button and drag a line over an object with a known length.")
         self.calibration_active = True
         self.reset_canvas()
 
@@ -57,11 +57,11 @@ def calibrate_release(self, event):
 
     distance_pixels = math.sqrt(
         (self.measure2[0] - self.measure1[0]) ** 2 + (self.measure2[1] - self.measure1[1]) ** 2)
-    distance_mm = simpledialog.askfloat("Kalibrering",
-                                        "Skriv in sträckan som den den röda linjen motsvarar i millimeter:")
+    distance_mm = simpledialog.askfloat("Calibration",
+                                        "Enter the distance that the red line represents in millimeters:")
     if distance_mm:
         self.pixels_per_mm = distance_pixels / distance_mm
-        messagebox.showinfo("Kalibrering", f"Pixlar per mm enligt kalibrering: {self.pixels_per_mm:.2f}")
+        messagebox.showinfo("Calibration", f"Pixels per mm according to calibration: {self.pixels_per_mm:.2f}")
         self.calibration_done = True
         self.calibration_active = False
         self.canvas.bind("<Button-1>", lambda event: self.click(event, "left"))  # Rebind left-click event
@@ -105,9 +105,9 @@ def load_calibration_data(self):
                 calibration_data = json.load(calib_file)
                 self.pixels_per_mm = calibration_data.get("pixels_per_mm")
                 if self.pixels_per_mm:
-                    print(f"Laddar sparad kalibrering för {filename}: {self.pixels_per_mm:.2f} pixlar per mm")
+                    print(f"Loading saved calibration for {filename}: {self.pixels_per_mm:.2f} pixels per mm")
                     self.calibration_done = True
                 else:
-                    print(f"Ingen sparad kalibrering för{filename}")
+                    print(f"No saved calibration for {filename}")
         else:
-            print(f"Ingen sparad kalibrering för {filename}")
+            print(f"No saved calibration for {filename}")

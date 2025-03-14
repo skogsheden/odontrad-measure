@@ -24,7 +24,7 @@ def draw_rectangle(self, event):
 
 def end_rectangle(self, event):
     if self.annotation_start_point and self.annotation_end_point:
-        name = simpledialog.askstring("Ange tand", "Skriv in namnet på tanden:")
+        name = simpledialog.askstring("Enter ID for annotation", "Enter an integer that corresponds to what you see in the image:")
         if not name:
             name = "NA"  # No id provided
         if name:
@@ -55,7 +55,7 @@ def end_rectangle(self, event):
             self.canvas.itemconfigure(rectangle["rect"], state="normal")
             self.rectangles.append(rectangle)
             print(rectangle)
-            # Rita namnet i det övre vänstra hörnet
+            # Draw the name in the upper left corner
 
         self.annotation_start_point = None
         self.annotation_end_point = None
@@ -71,7 +71,7 @@ def delete_last_rectangle(self, event):
         self.rectangles.pop()
         self.save_annotations()
     else:
-        print("Inget att radera")
+        print("Nothing to delete")
 
 
 def toggle_rectangles_visibility(self, event=None):
@@ -123,15 +123,15 @@ def save_annotations(self):
         annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
         with open(annot_filepath, "w") as annot_file:
             json.dump(annotations, annot_file)
-        print(f"Annoteringar sparade till: {annot_filepath}")
+        print(f"Annotations saved to: {annot_filepath}")
     else:
         annot_filename = f"{image_filename}.json"
         annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
         if os.path.exists(annot_filepath):
             os.remove(annot_filepath)
-            print(f"Inga annoteringar kvar, raderar filen: {annot_filepath}")
+            print(f"No annotations left, deleting file: {annot_filepath}")
         else:
-            print("Inget att spara")
+            print("Nothing to save")
 
 
 def load_annotations(self):
@@ -175,6 +175,30 @@ def load_annotations(self):
                 "text": text,
                 "color": color
             })
-        print(f"Annoteringar laddade från: {annot_filepath}")
+        print(f"Annotations loaded from: {annot_filepath}")
     else:
-        print("Inga annoteringar funna!")
+        print("No annotations found!")
+
+def save_blank_annotation(self):
+    # Get the filename of the image without extension
+    image_filename = os.path.splitext(os.path.basename(self.image_filepath))[0]
+
+    with Image.open(self.image_filepath) as img:
+        # Get image properties
+        mode_to_bpp = {'1': 1, 'L': 8, 'P': 8, 'RGB': 24, 'RGBA': 32, 'CMYK': 32, 'YCbCr': 24, 'I': 32, 'F': 32}
+        width, height = img.size
+        depth = mode_to_bpp[img.mode]
+
+    # Create a blank annotation structure
+    annotations = {
+        "filename": image_filename,
+        "annotations": [],  # No rectangles
+        "size": [{"width": width, "height": height, "depth": depth}]
+    }
+
+    # Save the blank annotations to a .json file
+    annot_filename = f"{image_filename}.json"
+    annot_filepath = os.path.join(os.path.dirname(self.image_filepath), annot_filename)
+    with open(annot_filepath, "w") as annot_file:
+        json.dump(annotations, annot_file)
+    print(f"Empty annotation file created: {annot_filepath}")

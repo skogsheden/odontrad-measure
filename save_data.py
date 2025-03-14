@@ -1,31 +1,61 @@
 from tkinter import filedialog, simpledialog, messagebox
+import csv
+import os
+import json
 
+
+def auto_save_measurements_as_json(self):
+    """
+    Automatically save measurements to a JSON file with the naming convention
+    filename_measurements.json in the same directory as the image.
+    """
+    if self.save_measurement_list and self.image_filepath:
+        # Create filename for the JSON file (image filename + _measurements.json)
+        base_filename = os.path.splitext(self.image_filepath)[0]
+        json_file_path = f"{base_filename}_measurements.json"
+
+        # Filter measurements for current image only
+        current_image_measurements = [
+            measurement for measurement in self.save_measurement_list
+            if measurement.get('filename') == self.image_filename
+        ]
+
+        if current_image_measurements:
+            with open(json_file_path, "w") as json_file:
+                json.dump(current_image_measurements, json_file, indent=4)
+            print(f"Measurements auto-saved to {json_file_path}")
+        else:
+            print("No measurements for current image to save")
 
 def save_measurements_to_file(self):
     if self.save_measurement_list:
-        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")])
         if file_path:
-            with open(file_path, "w") as file:
-                file.write(f"Examiner: {self.username}\n")
+            with open(file_path, "w", newline='') as file:
+                csv_writer = csv.writer(file)
+
+                # Write header row
+                header = ["Examiner", "Filename", "Tooth ID", "Blue Coordinates", "Blue Length (pixels)",
+                          "Blue Length (mm)", "Green Coordinates", "Green Length (pixels)",
+                          "Green Length (mm)", "Ratio (Green/Blue)"]
+                csv_writer.writerow(header)
+
+                # Write data rows
                 for measurement_info in self.save_measurement_list:
-                    if "filename" in measurement_info:
-                        file.write(f"Filename: {measurement_info['filename']}\n")
-                    if 'tooth_id' in measurement_info:
-                        file.write(f"Tooth id: {measurement_info['tooth_id']}\n")
-                    if 'blue_coordinates' in measurement_info:
-                        file.write(f"Blue coordinates: {measurement_info['blue_coordinates']}\n")
-                    if 'blue_length_pixels' in measurement_info:
-                        file.write(f"Blue Length (pixels): {measurement_info['blue_length_pixels']:.2f}\n")
-                    if 'blue_length_mm' in measurement_info:
-                        file.write(f"Blue Length (mm): {measurement_info['blue_length_mm']:.2f}\n")
-                    if 'green_coordinates' in measurement_info:
-                        file.write(f"Green coordinates: {measurement_info['green_coordinates']}\n")
-                    if 'green_length_pixels' in measurement_info:
-                        file.write(f"Green Length (pixels): {measurement_info['green_length_pixels']:.2f}\n")
-                    if 'green_length_mm' in measurement_info:
-                        file.write(f"Green Length (mm): {measurement_info['green_length_mm']:.2f}\n")
-                    if 'ratio' in measurement_info:
-                        file.write(f"Ratio (Green/Blue): {measurement_info['ratio']:.2f}\n\n")
-            messagebox.showinfo("Mätningar sparade", "Mätningar sparade till filen.")
+                    row = [
+                        self.username,
+                        measurement_info.get('filename', ''),
+                        measurement_info.get('tooth_id', ''),
+                        measurement_info.get('blue_coordinates', ''),
+                        f"{measurement_info.get('blue_length_pixels', 0):.2f}" if 'blue_length_pixels' in measurement_info else '',
+                        f"{measurement_info.get('blue_length_mm', 0):.2f}" if 'blue_length_mm' in measurement_info else '',
+                        measurement_info.get('green_coordinates', ''),
+                        f"{measurement_info.get('green_length_pixels', 0):.2f}" if 'green_length_pixels' in measurement_info else '',
+                        f"{measurement_info.get('green_length_mm', 0):.2f}" if 'green_length_mm' in measurement_info else '',
+                        f"{measurement_info.get('ratio', 0):.2f}" if 'ratio' in measurement_info else ''
+                    ]
+                    csv_writer.writerow(row)
+
+            messagebox.showinfo("Measurements saved", "Measurements saved to CSV file.")
     else:
-        messagebox.showinfo("Inga mätningar", "Inga mätningar att spara.")
+        messagebox.showinfo("No measurements", "No measurements to save.")
